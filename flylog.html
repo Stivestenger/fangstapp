@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FlyLog">
@@ -232,15 +232,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div class="stat-card"><div class="val" id="stat-fish">0</div><div class="lbl">Fisk fanget</div></div>
     </div>
     <div class="section-title">Årets ledertavle</div>
-    <div id="home-leaderboard" style="margin-bottom:1.5rem">
+    <div id="home-leaderboard" style="margin-bottom:0.75rem">
       <div style="font-size:0.82rem;color:var(--ink-light)">Laster kåring...</div>
     </div>
+    <div id="home-biggest-fish" style="margin-bottom:1.5rem"></div>
     <div class="section-title">Siste turer</div>
     <div id="trips-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Ingen turer ennå. Trykk + for å logge den første!</p></div></div>
   </div>
 
   <div id="tab-map" style="display:none;flex-direction:column;flex:1">
-    <div id="map" style="width:100%;flex:1;min-height:300px"></div>
+    <div id="map" style="width:100%;flex:1;min-height:300px;touch-action:none"></div>
     <div id="map-empty" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:var(--river-pale);padding:2rem;text-align:center;z-index:2">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:1rem"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <p style="font-size:0.9rem;color:var(--ink-light)">Ingen fangster med GPS-data ennå.<br>Hent vær via GPS når du logger en fangst!</p>
@@ -304,9 +305,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <!-- Full leaderboard -->
     <div class="section-title">Samlet rangering</div>
     <div id="full-leaderboard"></div>
-
-    <div class="section-title" style="margin-top:1.5rem">🪰 Topp 5 fluer</div>
-    <div id="top-flies"></div>
   </div>
 
   <div class="bottom-nav">
@@ -340,6 +338,58 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-nickname')">Avbryt</button>
       <button class="btn-save" onclick="saveNickname()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT CATCH -->
+<div class="modal-overlay" id="modal-edit-catch">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Rediger fangst</div>
+    <div class="field-group">
+      <label class="field-label">Bilde</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('edit-photo-camera').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Ta bilde
+        </button>
+        <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('edit-photo-library').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Velg fra bibliotek
+        </button>
+      </div>
+      <input type="file" id="edit-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onEditPhotoSelected(event)">
+      <input type="file" id="edit-photo-library" accept="image/*" style="display:none" onchange="onEditPhotoSelected(event)">
+      <div id="edit-photo-preview" style="display:none;position:relative;margin-top:0.5rem">
+        <img id="edit-photo-img" src="" style="width:100%;border-radius:10px;aspect-ratio:4/3;object-fit:cover">
+        <button onclick="removeEditPhoto()" style="position:absolute;top:6px;right:6px;width:26px;height:26px;background:rgba(0,0,0,0.55);border:none;border-radius:50%;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center">✕</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Art</label>
+        <select id="edit-species">
+          <option value="">Velg art</option>
+          <option>Ørret</option><option>Regnbueørret</option><option>Bekkeørret</option>
+          <option>Røye</option><option>Atlantisk laks</option><option>Harr</option>
+          <option>Gjedde</option><option>Abbor</option><option>Annet</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Vekt (g)</label><input type="number" id="edit-weight" placeholder="0" min="0" step="1"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Flue</label><input type="text" id="edit-fly" placeholder="f.eks. Elk Hair Caddis"></div>
+      <div class="field-group"><label class="field-label">Størrelse</label>
+        <select id="edit-fly-size">
+          <option value="">— str —</option>
+          <option>#4</option><option>#6</option><option>#8</option><option>#10</option>
+          <option>#12</option><option>#14</option><option>#16</option><option>#18</option><option>#20</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-catch')">Avbryt</button>
+      <button class="btn-save" id="edit-save-btn" onclick="saveEditCatch()">Lagre</button>
     </div>
   </div>
 </div>
@@ -404,7 +454,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
           <option>Gjedde</option><option>Abbor</option><option>Annet</option>
         </select>
       </div>
-      <div class="field-group"><label class="field-label">Vekt (kg)</label><input type="number" id="catch-weight" placeholder="0.0" min="0" step="0.1"></div>
+      <div class="field-group"><label class="field-label">Vekt (g)</label><input type="number" id="catch-weight" placeholder="0" min="0" step="1"></div>
     </div>
     <div class="field-row">
       <div class="field-group"><label class="field-label">Flue</label><input type="text" id="catch-fly" placeholder="f.eks. Elk Hair Caddis"></div>
@@ -440,7 +490,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="field-group"><label class="field-label">Tur</label>
       <select id="catch-trip"><option value="">— koble til tur —</option></select>
     </div>
-    <div class="field-group"><label class="field-label">Notater</label><textarea id="catch-notes" placeholder="Dyp, posisjon i kulp, stigeform..."></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-catch')">Avbryt</button>
       <button class="btn-save" id="catch-save-btn" onclick="saveCatch()">Lagre fangst</button>
@@ -589,7 +638,7 @@ function renderCatches(){
     const trip=allTrips.find(t=>t.id===c.trip_id);
     const icon=icons[c.species]||'🎣';
     const meta=[];
-    if(c.weight)meta.push(`${c.weight}kg`);
+    if(c.weight)meta.push(`${c.weight}g`);
     if(c.fly)meta.push(`🪰 ${c.fly}${c.fly_size?' '+c.fly_size:''}`);
     const photoUrl=c.photo_path?getPhotoUrl(c.photo_path):null;
     const wHtml=c.weather_temp!=null?`<div class="weather-strip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 110-14 7 7 0 0114 0 4 4 0 01-4 4H9"/></svg>${c.weather_desc||'Weather'} · ${Math.round(c.weather_temp)}°C · 💨 ${Math.round(c.weather_wind)} km/h · 💧 ${Math.round(c.weather_humidity)}%</div>`:'';
@@ -598,8 +647,8 @@ function renderCatches(){
       <div class="catch-card-inner">
         <div class="catch-icon-box">${icon}</div>
         <div class="catch-body">
-          <div class="species">${c.species||'Unknown'}</div>
-          <div class="catch-meta">${meta.join(' · ')||'<span>No details</span>'}</div>
+          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);padding:0;font-size:0.75rem">✏️ Rediger</button></div>
+          <div class="catch-meta">${meta.join(' · ')||'<span>Ingen detaljer</span>'}</div>
           ${trip?`<div class="catch-trip-label">📍 ${trip.name}</div>`:''}
         </div>
       </div>
@@ -694,7 +743,6 @@ async function saveCatch(){
     fly:document.getElementById('catch-fly').value.trim(),
     fly_size:document.getElementById('catch-fly-size').value||null,
     trip_id:document.getElementById('catch-trip').value||null,
-    notes:document.getElementById('catch-notes').value.trim(),
     photo_path:photoPath||null,
     weather_temp:weatherData?.temp??null,
     weather_humidity:weatherData?.humidity??null,
@@ -721,7 +769,6 @@ function resetCatchForm(){
   document.getElementById('catch-weight').value='';
   document.getElementById('catch-fly').value='';
   document.getElementById('catch-fly-size').value='';
-  document.getElementById('catch-notes').value='';
   document.getElementById('weather-result').style.display='none';
   document.getElementById('location-set').style.display='none';
   document.getElementById('gps-btn-label').textContent='Bruk min posisjon';
@@ -774,7 +821,7 @@ function openTripDetail(tripId){
       ${getAvatarHtml(null,name,36)}
       <div style="flex:1">
         <div style="font-weight:500;font-size:0.92rem;color:var(--ink)">${name}</div>
-        <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${s.heaviest>0?'Tyngste: '+s.heaviest.toFixed(2)+' kg':''}</div>
+        <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${s.heaviest>0?'Tyngste: '+s.heaviest+'g':''}</div>
       </div>
       <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--river-mid)">${s.count} 🎣</div>
     </div>`).join('');
@@ -817,7 +864,7 @@ function switchTab(tab,el){
     const tabEl = document.getElementById('tab-map');
     tabEl.style.display = 'flex';
     const mapEl = document.getElementById('map');
-    if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
+    if (mapEl) mapEl.style.height = (window.innerHeight - 120) + 'px';
     setTimeout(() => {
       if(!mapInstance) initMap();
       else mapInstance.invalidateSize();
@@ -917,16 +964,26 @@ async function loadAllMemberCatches(year) {
   return data.map(c=>({...c, member: getNickByUserId(c.user_id)}));
 }
 
+function getPoints(weightG) {
+  const w = parseFloat(weightG)||0;
+  if (w <= 0) return 1; // fish with no weight = 1 point
+  if (w < 200) return 1;
+  if (w < 500) return 3;
+  if (w < 1000) return 6;
+  return 10;
+}
+
 function buildLeaderboard(catches) {
   const stats = {};
   catches.forEach(c => {
     const m = c.member || getMemberName(currentUser?.email) || 'Ukjent';
-    if (!stats[m]) stats[m] = {name:m, count:0, heaviest:0};
+    if (!stats[m]) stats[m] = {name:m, count:0, heaviest:0, score:0};
     stats[m].count++;
     const w = parseFloat(c.weight)||0;
     if (w > stats[m].heaviest) stats[m].heaviest = w;
+    stats[m].score += getPoints(w);
   });
-  return Object.values(stats).map(s=>({...s, score: s.count*2 + s.heaviest*3})).sort((a,b)=>b.score-a.score);
+  return Object.values(stats).sort((a,b)=>b.score-a.score);
 }
 
 async function renderTrophy() {
@@ -943,7 +1000,7 @@ async function renderTrophy() {
   const leaderNameEl = document.getElementById('leader-name');
   const leaderSubEl = document.getElementById('leader-sub');
   if (leaderNameEl) leaderNameEl.textContent = leader ? leader.name : '—';
-  if (leaderSubEl) leaderSubEl.textContent = leader ? `${leader.count} fisk · tyngste: ${leader.heaviest>0?leader.heaviest.toFixed(2)+' kg':'—'}` : 'Ingen fangster registrert ennå';
+  if (leaderSubEl) leaderSubEl.textContent = leader ? `${leader.count} fisk · ${leader.score} poeng` : 'Ingen fangster registrert ennå';
 
   const byCount = [...board].sort((a,b)=>b.count-a.count);
   const rankCountEl = document.getElementById('rank-count');
@@ -951,10 +1008,10 @@ async function renderTrophy() {
 
   const byWeight = [...board].sort((a,b)=>b.heaviest-a.heaviest);
   const rankWeightEl = document.getElementById('rank-weight');
-  if (rankWeightEl) rankWeightEl.innerHTML = byWeight.slice(0,3).map((m,i)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:0.8rem"><span>${medals[i]} ${m.name}</span><span style="font-weight:500;color:var(--river)">${m.heaviest>0?m.heaviest.toFixed(2)+' kg':'—'}</span></div>`).join('') || '<div style="color:var(--ink-light);font-size:0.78rem">Ingen data</div>';
+  if (rankWeightEl) rankWeightEl.innerHTML = byWeight.slice(0,3).map((m,i)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:0.8rem"><span>${medals[i]} ${m.name}</span><span style="font-weight:500;color:var(--river)">${m.heaviest>0?m.heaviest+'g':'—'}</span></div>`).join('') || '<div style="color:var(--ink-light);font-size:0.78rem">Ingen data</div>';
 
   const fullEl = document.getElementById('full-leaderboard');
-  if (fullEl) fullEl.innerHTML = board.length ? board.map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem"><div style="font-size:1.4rem;min-width:32px;text-align:center">${medals[i]||'·'}</div>${getAvatarHtml(null,m.name,36)}<div style="flex:1"><div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest.toFixed(2)+' kg':'—'}</div></div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--river-mid)">${m.score.toFixed(0)}p</div></div>`).join('') : '<div class="empty-state"><p>Ingen fangster registrert for dette året.</p></div>';
+  if (fullEl) fullEl.innerHTML = board.length ? board.map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem"><div style="font-size:1.4rem;min-width:32px;text-align:center">${medals[i]||'·'}</div>${getAvatarHtml(null,m.name,36)}<div style="flex:1"><div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div></div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--river-mid)">${m.score}p</div></div>`).join('') : '<div class="empty-state"><p>Ingen fangster registrert for dette året.</p></div>';
 
   // Top flies
   const flyStats = {};
@@ -970,7 +1027,27 @@ async function renderTrophy() {
 
   // Home leaderboard compact
   const homeBoard = document.getElementById('home-leaderboard');
-  if (homeBoard) homeBoard.innerHTML = board.slice(0,3).map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem"><div style="font-size:1.2rem">${medals[i]}</div>${getAvatarHtml(null,m.name,28)}<div style="flex:1;font-size:0.88rem;font-weight:500;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light)">${m.count} fisk</div><div style="font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--river-mid);margin-left:6px">${m.heaviest>0?m.heaviest.toFixed(2)+'kg':''}</div></div>`).join('') || '<div style="font-size:0.82rem;color:var(--ink-light)">Ingen fangster ennå</div>';
+  if (homeBoard) homeBoard.innerHTML = board.slice(0,3).map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem"><div style="font-size:1.2rem">${medals[i]}</div>${getAvatarHtml(null,m.name,28)}<div style="flex:1;font-size:0.88rem;font-weight:500;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light)">${m.count} fisk</div></div>`).join('') || '<div style="font-size:0.82rem;color:var(--ink-light)">Ingen fangster ennå</div>';
+
+  // Biggest fish card
+  const biggestEl = document.getElementById('home-biggest-fish');
+  if (biggestEl) {
+    const allWithWeight = catches.filter(c=>parseFloat(c.weight)>0).sort((a,b)=>parseFloat(b.weight)-parseFloat(a.weight));
+    const biggest = allWithWeight[0];
+    if (biggest) {
+      const catcher = getNickByUserId(biggest.user_id);
+      biggestEl.innerHTML = `<div style="background:linear-gradient(135deg,var(--sand-pale),#f0e0b0);border:1px solid var(--sand);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem">
+        <div style="font-size:1.5rem">🏅</div>
+        <div style="flex:1">
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#6b4c1e;margin-bottom:2px">Årets største fisk</div>
+          <div style="font-weight:600;font-size:0.92rem;color:var(--ink)">${catcher} — ${biggest.species||'Ukjent'}</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:700;color:#6b4c1e">${biggest.weight}g</div>
+      </div>`;
+    } else {
+      biggestEl.innerHTML = '';
+    }
+  }
   } catch(e) {
     console.error('Trophy error:', e);
     const homeBoard = document.getElementById('home-leaderboard');
@@ -1160,18 +1237,22 @@ function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
   // Set explicit pixel height before init
-  mapEl.style.height = (window.innerHeight - 114) + 'px';
+  mapEl.style.height = (window.innerHeight - 120) + 'px';
   mapInstance = L.map('map', {
     zoomControl: true,
     dragging: true,
     inertia: true,
+    inertiaDeceleration: 3000,
     touchZoom: true,
-    scrollWheelZoom: false,
+    scrollWheelZoom: true,
     doubleClickZoom: true,
     tap: false,
-    tapTolerance: 15,
-    bounceAtZoomLimits: true
+    bounceAtZoomLimits: false
   }).setView([62.0, 10.0], 6);
+  // Explicitly enable dragging and touch zoom
+  mapInstance.dragging.enable();
+  mapInstance.touchZoom.enable();
+  mapInstance.scrollWheelZoom.enable();
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
     maxZoom: 19,
@@ -1182,7 +1263,7 @@ function initMap() {
   // Handle resize
   window.addEventListener('resize', () => {
     if (mapInstance) {
-      mapEl.style.height = (window.innerHeight - 114) + 'px';
+      mapEl.style.height = (window.innerHeight - 120) + 'px';
       mapInstance.invalidateSize();
     }
   });
@@ -1195,11 +1276,8 @@ function renderMap() {
   mapMarkers = [];
   const catchesWithGPS = allCatches.filter(c => c.weather_lat && c.weather_lon);
   const mapEmpty = document.getElementById('map-empty');
-  if (!catchesWithGPS.length) {
-    if (mapEmpty) mapEmpty.style.display = 'flex';
-    return;
-  }
   if (mapEmpty) mapEmpty.style.display = 'none';
+  // Map is always interactive even without catches
   const bounds = [];
   catchesWithGPS.forEach(c => {
     const trip = allTrips.find(t => t.id === c.trip_id);
@@ -1341,6 +1419,74 @@ async function deleteTrip(tripId) {
     showToast('Feil ved sletting');
     console.error(e);
   }
+}
+
+
+// EDIT CATCH
+let editCatchId = null;
+let editPhotoFile = null;
+
+function openEditCatch(catchId) {
+  const c = allCatches.find(x => x.id === catchId);
+  if (!c) return;
+  if (c.user_id !== currentUser.id) { showToast('Du kan kun redigere egne fangster'); return; }
+  editCatchId = catchId;
+  editPhotoFile = null;
+  document.getElementById('edit-species').value = c.species || '';
+  document.getElementById('edit-weight').value = c.weight || '';
+  document.getElementById('edit-fly').value = c.fly || '';
+  document.getElementById('edit-fly-size').value = c.fly_size || '';
+  // Show existing photo
+  const previewWrap = document.getElementById('edit-photo-preview');
+  const previewImg = document.getElementById('edit-photo-img');
+  if (c.photo_path) {
+    const url = getPhotoUrl(c.photo_path);
+    if (url) { previewImg.src = url; previewWrap.style.display = 'block'; }
+  } else {
+    previewWrap.style.display = 'none';
+  }
+  openModal('modal-edit-catch');
+}
+
+function onEditPhotoSelected(e) {
+  const file = e.target.files[0]; if (!file) return;
+  editPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('edit-photo-img').src = ev.target.result;
+    document.getElementById('edit-photo-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeEditPhoto() {
+  editPhotoFile = null;
+  document.getElementById('edit-photo-camera').value = '';
+  document.getElementById('edit-photo-library').value = '';
+  document.getElementById('edit-photo-preview').style.display = 'none';
+}
+
+async function saveEditCatch() {
+  if (!sb || !editCatchId) return;
+  const btn = document.getElementById('edit-save-btn');
+  btn.textContent = 'Lagrer…'; btn.disabled = true;
+  let photoPath = allCatches.find(c=>c.id===editCatchId)?.photo_path || null;
+  if (editPhotoFile) {
+    const newPath = await uploadPhoto(currentUser.id);
+    if (newPath) photoPath = newPath;
+  }
+  const {error} = await sb.from('catches').update({
+    species: document.getElementById('edit-species').value,
+    weight: parseFloat(document.getElementById('edit-weight').value) || null,
+    fly: document.getElementById('edit-fly').value.trim(),
+    fly_size: document.getElementById('edit-fly-size').value || null,
+    photo_path: photoPath
+  }).eq('id', editCatchId);
+  btn.textContent = 'Lagre'; btn.disabled = false;
+  if (error) { showToast('Feil: '+error.message); return; }
+  closeModal('modal-edit-catch');
+  showToast('Fangst oppdatert! ✓');
+  loadData();
 }
 
 let toastTimer=null;
