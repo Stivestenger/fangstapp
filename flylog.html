@@ -856,7 +856,7 @@ async function signOut(){
 async function registerPush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
+    const reg = await navigator.serviceWorker.register('./sw.js');
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
     showToast('Varsler aktivert! 🔔');
