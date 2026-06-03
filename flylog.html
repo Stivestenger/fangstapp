@@ -239,8 +239,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div id="trips-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Ingen turer ennå. Trykk + for å logge den første!</p></div></div>
   </div>
 
-  <div id="tab-map" style="display:none;position:relative;height:calc(100vh - 114px)">
-    <div id="map" style="width:100%;height:100%"></div>
+  <div id="tab-map" style="display:none;flex-direction:column;flex:1">
+    <div id="map" style="width:100%;flex:1;min-height:300px"></div>
     <div id="map-empty" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:var(--river-pale);padding:2rem;text-align:center;z-index:2">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:1rem"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <p style="font-size:0.9rem;color:var(--ink-light)">Ingen fangster med GPS-data ennå.<br>Hent vær via GPS når du logger en fangst!</p>
@@ -814,20 +814,21 @@ function switchTab(tab,el){
   el.classList.add('active');
   if(tab==='trophy') renderTrophy();
   if(tab==='map') {
-    const mapEl = document.getElementById('tab-map');
-    mapEl.style.display = 'block';
+    const tabEl = document.getElementById('tab-map');
+    tabEl.style.display = 'flex';
+    const mapEl = document.getElementById('map');
+    if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
     setTimeout(() => {
       if(!mapInstance) initMap();
-      setTimeout(() => {
-        if(mapInstance) mapInstance.invalidateSize();
-        renderMap();
-      }, 300);
-    }, 50);
+      else mapInstance.invalidateSize();
+      setTimeout(() => renderMap(), 200);
+    }, 100);
   }
   ['home','log','trophy','profile'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===tab?'flex':'none';
   });
-  if(tab !== 'map') document.getElementById('tab-map').style.display='none';
+  if(tab!=='map') document.getElementById('tab-map').style.display='none';
+
 }
 
 function openModal(id){document.getElementById(id).classList.add('open')}
@@ -1156,25 +1157,35 @@ function getAvatarHtml(userId, nickname, size) {
 
 function initMap() {
   if (mapInstance) return;
+  const mapEl = document.getElementById('map');
+  if (!mapEl) return;
+  // Set explicit pixel height before init
+  mapEl.style.height = (window.innerHeight - 114) + 'px';
   mapInstance = L.map('map', {
     zoomControl: true,
     dragging: true,
+    inertia: true,
     touchZoom: true,
     scrollWheelZoom: false,
     doubleClickZoom: true,
     tap: false,
-    bounceAtZoomLimits: false,
-    renderer: L.canvas()
+    tapTolerance: 15,
+    bounceAtZoomLimits: true
   }).setView([62.0, 10.0], 6);
-  // Enable touch dragging explicitly for mobile
-  if (L.Browser.mobile) {
-    mapInstance.dragging.enable();
-    mapInstance.touchZoom.enable();
-  }
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+    maxNativeZoom: 19,
+    tileSize: 256,
+    zoomOffset: 0
   }).addTo(mapInstance);
+  // Handle resize
+  window.addEventListener('resize', () => {
+    if (mapInstance) {
+      mapEl.style.height = (window.innerHeight - 114) + 'px';
+      mapInstance.invalidateSize();
+    }
+  });
 }
 
 function renderMap() {
@@ -1220,8 +1231,7 @@ function renderMap() {
     mapInstance.fitBounds(bounds, {padding: [40, 40], maxZoom: 13});
   }
   // Invalidate size after tab becomes visible
-  setTimeout(() => { mapInstance.invalidateSize(); }, 100);
-  setTimeout(() => { mapInstance.invalidateSize(); }, 500);
+  setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
 }
 
 
