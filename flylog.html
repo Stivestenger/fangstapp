@@ -584,9 +584,11 @@ function enterApp(){
   document.getElementById('trip-date').value=new Date().toISOString().split('T')[0];
   // Always start on home tab
   ['home','log','trophy','profile'].forEach(t=>{
-    document.getElementById('tab-'+t).style.display=t==='home'?'flex':'none';
+    const el = document.getElementById('tab-'+t);
+    if(el) el.style.display=t==='home'?'flex':'none';
   });
-  document.getElementById('tab-map').style.display='none';
+  const mapTab = document.getElementById('tab-map');
+  if(mapTab) mapTab.style.display='none';
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   registerPush();
   initTrophyYearSelect();
@@ -882,12 +884,13 @@ async function signOut(){
   currentUser=null;
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-auth').classList.add('active');
-  document.getElementById('auth-card').style.display='none';
-  document.getElementById('supabase-config-form').style.display='block';
-  document.getElementById('config-note').style.display='block';
-  const cfg=loadConfig();
-  if(cfg.url)document.getElementById('cfg-url').value=cfg.url;
-  if(cfg.key)document.getElementById('cfg-key').value=cfg.key;
+  // Go straight to login, skip config
+  document.getElementById('supabase-config-form').style.display='none';
+  document.getElementById('config-note').style.display='none';
+  document.getElementById('auth-card').style.display='block';
+  document.getElementById('auth-error').style.display='none';
+  document.getElementById('auth-email').value='';
+  document.getElementById('auth-password').value='';
 }
 
 
