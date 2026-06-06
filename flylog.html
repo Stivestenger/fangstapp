@@ -769,7 +769,6 @@ async function saveTrip(){
   if(!sb)return;
   const name=document.getElementById('trip-name').value.trim();
   if(!name){showToast('Turen trenger et navn');return}
-  const isClub=document.getElementById('trip-is-club').checked;
   const {error}=await sb.from('trips').insert({
     user_id:currentUser.id,name,
     location:document.getElementById('trip-location').value.trim(),
@@ -782,7 +781,6 @@ async function saveTrip(){
   ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('trip-date').value='';
   document.getElementById('trip-date-end').value='';
-  document.getElementById('trip-is-club').checked=false;
   showToast('Tur lagret!');loadData();
 }
 
@@ -1328,7 +1326,6 @@ function onTopPlus() {
     ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('trip-date').value='';
     document.getElementById('trip-date-end').value='';
-      document.getElementById('trip-is-club').checked=false;
     // Auto-check current user
     const myNick = getMyNickname();
     document.querySelectorAll('.trip-member-cb').forEach(cb => {
