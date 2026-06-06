@@ -398,10 +398,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="field-group"><label class="field-label">Turnavn</label><input type="text" id="trip-name" placeholder="f.eks. Glomma åpningsdag"></div>
     <div class="field-group"><label class="field-label">Lokasjon</label><input type="text" id="trip-location" placeholder="Elv eller innsjø"></div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">Dato</label><input type="date" id="trip-date"></div>
-      <div class="field-group"><label class="field-label">Forhold</label>
-        <select id="trip-conditions"><option value="">—</option><option>Klarvær</option><option>Overskyet</option><option>Regn</option><option>Vind</option><option>Tåke</option></select>
-      </div>
+      <div class="field-group"><label class="field-label">Fra</label><input type="date" id="trip-date"></div>
+      <div class="field-group"><label class="field-label">Til</label><input type="date" id="trip-date-end"></div>
+    </div>
+    <div class="field-group"><label class="field-label">Forhold</label>
+      <select id="trip-conditions"><option value="">—</option><option>Klarvær</option><option>Overskyet</option><option>Regn</option><option>Vind</option><option>Tåke</option></select>
     </div>
     <div class="field-group"><label class="field-label">Notater</label><textarea id="trip-notes" placeholder="Vanntemp, strøm, klekking..."></textarea></div>
     <div class="field-group">
@@ -619,7 +620,7 @@ function renderHome(){
     const wc=tc.find(c=>c.weather_temp!=null);
     const wHtml=wc?`<span class="weather-badge">🌤 ${wc.weather_desc||'Weather logged'}</span>`:'';
     return`<div class="trip-card" onclick="openTripDetail('${t.id}')">
-      <div class="trip-header"><div class="trip-name">${t.name}${t.is_club_trip?'<span style="font-size:0.65rem;background:var(--river-pale);color:var(--river);padding:2px 7px;border-radius:10px;margin-left:6px;font-family:DM Sans,sans-serif;font-weight:500">Klubbtur</span>':''}</div><div class="trip-date">${t.date}</div></div>
+      <div class="trip-header"><div class="trip-name">${t.name}${t.is_club_trip?'<span style="font-size:0.65rem;background:var(--river-pale);color:var(--river);padding:2px 7px;border-radius:10px;margin-left:6px;font-family:DM Sans,sans-serif;font-weight:500">Klubbtur</span>':''}</div><div class="trip-date">${t.date}${t.date_end && t.date_end!==t.date?" → "+t.date_end:""}</div></div>
       <div class="trip-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${t.location||'Ingen lokasjon'}</div>
       <div class="trip-fish">${pillsHtml}${wHtml}</div>
     </div>`
@@ -784,6 +785,7 @@ async function saveTrip(){
     user_id:currentUser.id,name,
     location:document.getElementById('trip-location').value.trim(),
     date:document.getElementById('trip-date').value,
+    date_end:document.getElementById('trip-date-end').value||null,
     conditions:document.getElementById('trip-conditions').value,
     notes:document.getElementById('trip-notes').value.trim(),
     is_club_trip:isClub
@@ -791,6 +793,7 @@ async function saveTrip(){
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-trip');
   ['trip-name','trip-location','trip-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trip-date-end').value='';
   document.getElementById('trip-is-club').checked=false;
   showToast('Tur lagret!');loadData();
 }
@@ -827,7 +830,7 @@ function openTripDetail(tripId){
       <button onclick="deleteTrip('${t.id}')" style="background:none;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:0.35rem 0.75rem;cursor:pointer">🗑 Slett tur</button>
     </div>
     <h2 style="font-family:'Lora',serif;font-size:1.4rem;font-weight:600;color:var(--ink)">${t.name}</h2>
-    <div style="font-size:0.8rem;color:var(--ink-light);margin:0.3rem 0 1.2rem">${t.date}${t.location?' · '+t.location:''}${t.conditions?' · '+t.conditions:''}</div>
+    <div style="font-size:0.8rem;color:var(--ink-light);margin:0.3rem 0 1.2rem">${t.date}${t.date_end && t.date_end!==t.date?" → "+t.date_end:""}${t.location?' · '+t.location:''}${t.conditions?' · '+t.conditions:''}</div>
     ${t.notes?`<p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:1.2rem;line-height:1.5">${t.notes}</p>`:''}
     <div style="background:var(--river-pale);border:1px solid var(--river-light);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--river)" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
