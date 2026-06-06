@@ -382,6 +382,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
         </select>
       </div>
     </div>
+    <div class="field-group"><label class="field-label">Koble til tur</label>
+      <select id="edit-trip"></select>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-edit-catch')">Avbryt</button>
       <button style="flex:1;padding:0.85rem;background:none;border:1px solid var(--danger);border-radius:10px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer" onclick="deleteFromEdit()">🗑 Slett</button>
@@ -643,7 +646,7 @@ function renderCatches(){
       ${photoUrl?`<img class="catch-photo" src="${photoUrl}" alt="catch photo" loading="lazy">`:''}
       <div class="catch-card-inner">
         <div class="catch-body">
-          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:rgba(0,0,0,0.25);padding:4px;font-size:0.75rem;line-height:1">✎</button></div>
+          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:rgba(0,0,0,0.3);padding:6px;font-size:1.1rem;line-height:1">✎</button></div>
           <div class="catch-meta">${meta.join(' · ')||'<span>Ingen detaljer</span>'}</div>
           ${trip?`<div class="catch-trip-label">📍 ${trip.name}</div>`:''}
         </div>
@@ -1361,6 +1364,10 @@ function openEditCatch(catchId) {
   } else {
     previewWrap.style.display = 'none';
   }
+  // Populate trip selector
+  const editTripSel = document.getElementById('edit-trip');
+  editTripSel.innerHTML = '<option value="">— ingen tur —</option>' + 
+    allTrips.map(t=>`<option value="${t.id}"${c.trip_id===t.id?' selected':''}>${t.name}</option>`).join('');
   openModal('modal-edit-catch');
 }
 
@@ -1391,12 +1398,14 @@ async function saveEditCatch() {
     const newPath = await uploadPhoto(currentUser.id);
     if (newPath) photoPath = newPath;
   }
+  const editTripVal = document.getElementById('edit-trip').value;
   const {error} = await sb.from('catches').update({
     species: document.getElementById('edit-species').value,
     weight: parseFloat(document.getElementById('edit-weight').value) || null,
     fly: document.getElementById('edit-fly').value.trim(),
     fly_size: document.getElementById('edit-fly-size').value || null,
-    photo_path: photoPath
+    photo_path: photoPath,
+    trip_id: editTripVal || null
   }).eq('id', editCatchId);
   btn.textContent = 'Lagre'; btn.disabled = false;
   if (error) { showToast('Feil: '+error.message); return; }
