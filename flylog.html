@@ -1326,12 +1326,12 @@ function onTopPlus() {
     ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('trip-date').value='';
     document.getElementById('trip-date-end').value='';
-    // Auto-check current user
+    openModal('modal-trip');
+    // Auto-check current user after modal opens
     const myNick = getMyNickname();
     document.querySelectorAll('.trip-member-cb').forEach(cb => {
       cb.checked = cb.value === myNick;
     });
-    openModal('modal-trip');
   }
 }
 
