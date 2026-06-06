@@ -423,10 +423,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div class="field-group"><label class="field-label">Til</label><input type="date" id="trip-date-end"></div>
     </div>
     <div class="field-group">
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)">
-        <input type="checkbox" id="trip-is-club" style="width:18px;height:18px;cursor:pointer;accent-color:var(--river-mid)">
-        Klubbtur — synlig for alle medlemmer
-      </label>
+      <label class="field-label">Deltakere</label>
+      <div id="trip-members-list" style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="trip-member-cb" value="Pål" style="width:18px;height:18px;accent-color:var(--river-mid)"> Pål</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="trip-member-cb" value="Fredrik" style="width:18px;height:18px;accent-color:var(--river-mid)"> Fredrik</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="trip-member-cb" value="Christoffer" style="width:18px;height:18px;accent-color:var(--river-mid)"> Christoffer</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="trip-member-cb" value="Lars-Petter" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars-Petter</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="trip-member-cb" value="Lars" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars</label>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('modal-trip')">Avbryt</button>
@@ -811,10 +815,14 @@ function openTripDetail(tripId){
   document.getElementById('trip-detail-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
       <button class="back-btn" style="margin-bottom:0" onclick="closeModal('modal-trip-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Tilbake</button>
-      <button onclick="deleteTrip('${t.id}')" style="background:none;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:0.35rem 0.75rem;cursor:pointer">🗑 Slett tur</button>
+      ${isParticipant ? `<button onclick="deleteTrip('${t.id}')" style="background:none;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:0.35rem 0.75rem;cursor:pointer">🗑 Slett tur</button>` : ''}
     </div>
 
     <h2 style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:1rem">${t.name}</h2>
+
+    ${t.members && t.members.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
+      ${t.members.map(m=>`<span style="background:var(--river-pale);color:var(--river);font-size:0.75rem;font-weight:500;padding:3px 10px;border-radius:20px">${m}</span>`).join('')}
+    </div>` : ''}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem">
       <div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
@@ -836,7 +844,7 @@ function openTripDetail(tripId){
 
     <div class="section-title">Hvem fanget hva</div>
     ${catchHtml}
-    <button class="btn-save" style="margin-top:1rem;width:100%" onclick="openCatchForTrip('${t.id}')">+ Logg en fangst på denne turen</button>`;
+    ${isParticipant ? `<button class="btn-save" style="margin-top:1rem;width:100%" onclick="openCatchForTrip('${t.id}')">+ Logg en fangst på denne turen</button>` : ''}`;
   openModal('modal-trip-detail');
 }
 
@@ -1321,6 +1329,11 @@ function onTopPlus() {
     document.getElementById('trip-date').value='';
     document.getElementById('trip-date-end').value='';
       document.getElementById('trip-is-club').checked=false;
+    // Auto-check current user
+    const myNick = getMyNickname();
+    document.querySelectorAll('.trip-member-cb').forEach(cb => {
+      cb.checked = cb.value === myNick;
+    });
     openModal('modal-trip');
   }
 }
