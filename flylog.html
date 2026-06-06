@@ -645,7 +645,7 @@ function renderHome(){
     const wc=tc.find(c=>c.weather_temp!=null);
     const wHtml=wc?`<span class="weather-badge">🌤 ${wc.weather_desc||'Weather logged'}</span>`:'';
     return`<div class="trip-card" onclick="openTripDetail('${t.id}')">
-      <div class="trip-header"><div class="trip-name">${t.name}${t.is_club_trip?'<span style="font-size:0.65rem;background:var(--river-pale);color:var(--river);padding:2px 7px;border-radius:10px;margin-left:6px;font-family:DM Sans,sans-serif;font-weight:500">Klubbtur</span>':''}</div><div class="trip-date">${t.date}${t.date_end && t.date_end!==t.date?" → "+t.date_end:""}</div></div>
+      <div class="trip-header"><div class="trip-name">${t.name}${t.is_club_trip?'<span style="font-size:0.65rem;background:var(--river-pale);color:var(--river);padding:2px 7px;border-radius:10px;margin-left:6px;font-family:DM Sans,sans-serif;font-weight:500">Klubbtur</span>':''}</div><div class="trip-date">${formatDate(t.date)}${t.date_end && t.date_end!==t.date?" → "+formatDate(t.date_end):""}</div></div>
       <div class="trip-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${t.location||'Ingen lokasjon'}</div>
       <div class="trip-fish">${pillsHtml}${wHtml}</div>
     </div>`
@@ -789,9 +789,10 @@ async function saveTrip(){
 
 
 function openTripDetail(tripId){
-  console.log("openTripDetail called with:", tripId, "allTrips:", allTrips.length);
   const t=allTrips.find(x=>x.id===tripId);
-  if(!t){console.log("Trip not found!"); return;}
+  if(!t)return;
+  const myNick=getMyNickname();
+  const isParticipant=!t.members||t.members.length===0||t.members.includes(myNick)||t.user_id===currentUser.id;
   const catches=allCatches.filter(c=>c.trip_id===tripId);
   // Group catches by member
   const memberStats = {};
@@ -828,7 +829,7 @@ function openTripDetail(tripId){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem">
       <div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
         <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">📅 Dato</div>
-        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.date}${t.date_end && t.date_end!==t.date?'<br>→ '+t.date_end:''}</div>
+        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${formatDate(t.date)}${t.date_end && t.date_end!==t.date?'<br>→ '+formatDate(t.date_end):''}</div>
       </div>
       ${t.location?`<div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
         <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">📍 Lokasjon</div>
@@ -1437,6 +1438,17 @@ async function deleteFromEdit() {
   closeModal('modal-edit-catch');
   showToast('Fangst slettet');
   loadData();
+}
+
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = String(d.getFullYear()).slice(2);
+  return `${day} ${month} '${year}`;
 }
 
 let toastTimer=null;
