@@ -686,7 +686,10 @@ function renderCatches(){
       <div style="flex:1;min-width:0">
         <div style="font-weight:500;font-size:0.9rem;color:var(--ink);display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:rgba(0,0,0,0.25);padding:4px;font-size:1rem;line-height:1;flex-shrink:0">✎</button></div>
         <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.join(' · ')||'—'}</div>
-        ${trip?`<div style="font-size:0.7rem;color:var(--river-mid);margin-top:2px">📍 ${trip.name}</div>`:''}
+        <div style="font-size:0.7rem;color:var(--ink-light);margin-top:2px;display:flex;gap:8px">
+          <span style="color:var(--moss-mid);font-weight:500">${getNickByUserId(c.user_id)}</span>
+          ${trip?`<span style="color:var(--river-mid)">📍 ${trip.name}</span>`:''}
+        </div>
       </div>
     </div>`
   }).join('');
