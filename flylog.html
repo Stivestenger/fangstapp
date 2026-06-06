@@ -302,6 +302,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <!-- Full leaderboard -->
     <div class="section-title">Samlet rangering</div>
     <div id="full-leaderboard"></div>
+    <div id="top-flies" style="display:none"></div>
   </div>
 
   <div class="bottom-nav">
@@ -668,7 +669,6 @@ function onPhotoSelected(e){
   reader.onload=ev=>{
     document.getElementById('photo-preview-img').src=ev.target.result;
     document.getElementById('photo-preview-wrap').style.display='block';
-    document.getElementById('photo-upload-area').style.display='none';
   };
   reader.readAsDataURL(file);
 }
@@ -678,7 +678,6 @@ function removePhoto(){
   document.getElementById('catch-photo-camera').value='';
   document.getElementById('catch-photo-library').value='';
   document.getElementById('photo-preview-wrap').style.display='none';
-  document.getElementById('photo-upload-area').style.display='block';
 }
 
 async function uploadPhoto(userId){
@@ -698,43 +697,12 @@ async function uploadPhoto(userId){
   }
 }
 
-async function fetchWeather(){
-  const btn=document.getElementById('weather-btn-label');
-  btn.textContent='Finner posisjon…';
-  if(!navigator.geolocation){showToast('GPS ikke tilgjengelig på denne enheten');btn.textContent='Hent nåværende vær via GPS';return}
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    btn.textContent='Henter vær…';
-    const {latitude:lat,longitude:lon}=pos.coords;
-    try{
-      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh`);
-      const d=await r.json();const cur=d.current;
-      const desc=wmoDesc(cur.weather_code);
-      weatherData={temp:cur.temperature_2m,humidity:cur.relative_humidity_2m,wind:cur.wind_speed_10m,desc,lat,lon};
-      document.getElementById('w-main').textContent=`${desc} · ${Math.round(cur.temperature_2m)}°C`;
-      document.getElementById('w-grid').innerHTML=`
-        <div class="weather-item">🌡 ${Math.round(cur.temperature_2m)}°C</div>
-        <div class="weather-item">💨 ${Math.round(cur.wind_speed_10m)} km/h</div>
-        <div class="weather-item">💧 ${Math.round(cur.relative_humidity_2m)}%</div>
-        <div class="weather-item">📍 ${lat.toFixed(3)}, ${lon.toFixed(3)}</div>`;
-      document.getElementById('weather-result').style.display='block';
-      btn.textContent='Vær hentet ✓';
-    }catch(e){showToast('Kunne ikke hente vær');btn.textContent='Hent nåværende vær via GPS';}
-  },()=>{showToast('Posisjon nektet — aktiver GPS');btn.textContent='Hent nåværende vær via GPS';});
-}
-
-function wmoDesc(c){
-  if(c===0)return'Klart';if(c<=2)return'Delvis skyet';if(c===3)return'Overskyet';
-  if(c<=49)return'Tåkete';if(c<=59)return'Yr';if(c<=69)return'Regn';
-  if(c<=79)return'Snø';if(c<=84)return'Regnbyger';if(c<=99)return'Tordenvær';
-  return'Ukjent';
-}
-
 async function saveCatch(){
   if(!sb)return;
   const species=document.getElementById('catch-species').value;
   if(!species){showToast('Velg en art');return}
   const btn=document.getElementById('catch-save-btn');
-  btn.textContent='Saving…';btn.disabled=true;
+  btn.textContent='Lagrer…';btn.disabled=true;
   const photoPath=await uploadPhoto(currentUser.id);
   const {error}=await sb.from('catches').insert({
     user_id:currentUser.id,species,
@@ -750,7 +718,7 @@ async function saveCatch(){
     weather_lat:catchLat??null,
     weather_lon:catchLon??null
   });
-  btn.textContent='Save catch';btn.disabled=false;
+  btn.textContent='Lagre fangst';btn.disabled=false;
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-catch');resetCatchForm();
   showToast('Fangst logget! 🎣');
@@ -763,7 +731,6 @@ function resetCatchForm(){
   document.getElementById('catch-photo-camera').value='';
   document.getElementById('catch-photo-library').value='';
   document.getElementById('photo-preview-wrap').style.display='none';
-  document.getElementById('photo-upload-area').style.display='block';
   document.getElementById('catch-species').value='';
   document.getElementById('catch-weight').value='';
   document.getElementById('catch-fly').value='';
@@ -771,12 +738,10 @@ function resetCatchForm(){
   document.getElementById('weather-result').style.display='none';
   document.getElementById('location-set').style.display='none';
   document.getElementById('gps-btn-label').textContent='Bruk min posisjon';
-  document.getElementById('catch-pin-map').style.display='none';
+  if(document.getElementById('catch-pin-map')) document.getElementById('catch-pin-map').style.display='none';
   catchLat=null; catchLon=null;
   if(catchPinMarker){catchPinMarker.remove();catchPinMarker=null;}
   if(catchPinMap){catchPinMap.remove();catchPinMap=null;}
-  document.querySelectorAll('#modal-catch .seg-ctrl button').forEach((b,i)=>b.classList.toggle('active',i===0));
-  catchOutcome='gjenutsatt';
 }
 
 async function saveTrip(){
