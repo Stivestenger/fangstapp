@@ -515,6 +515,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 </div>
 
+<!-- MODAL: CONFIRM -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
+    <div class="modal-handle"></div>
+    <p id="confirm-message" style="font-size:1rem;font-weight:500;color:var(--ink);text-align:center;margin:0.5rem 0 1.5rem">Er du sikker?</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="confirmResolve(false)">Avbryt</button>
+      <button style="flex:2;padding:0.85rem;background:var(--danger);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;color:#fff;cursor:pointer" onclick="confirmResolve(true)" id="confirm-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: TRIP DETAIL -->
 <div class="modal-overlay" id="modal-trip-detail">
   <div class="modal">
@@ -1341,7 +1353,7 @@ function onTopPlus() {
 
 
 async function deleteTrip(tripId) {
-  if (!confirm('Slette turen?')) return;
+  if (!await showConfirm('Slette turen?')) return;
   showToast('Sletter...');
   try {
     await sb.from('catches').delete().eq('trip_id', tripId);
@@ -1432,7 +1444,7 @@ async function saveEditCatch() {
 
 
 async function deleteFromEdit() {
-  if (!confirm('Slette fangsten?')) return;
+  if (!await showConfirm('Slette fangsten?')) return;
   const {error} = await sb.from('catches').delete().eq('id', editCatchId);
   if (error) { showToast('Kunne ikke slette: '+error.message); return; }
   closeModal('modal-edit-catch');
@@ -1449,6 +1461,21 @@ function formatDate(dateStr) {
   const month = months[d.getMonth()];
   const year = String(d.getFullYear()).slice(2);
   return `${day} ${month} '${year}`;
+}
+
+
+// Custom confirm dialog
+let confirmResolve = null;
+
+function showConfirm(message) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-message').textContent = message;
+    confirmResolve = (result) => {
+      closeModal('modal-confirm');
+      resolve(result);
+    };
+    openModal('modal-confirm');
+  });
 }
 
 let toastTimer=null;
