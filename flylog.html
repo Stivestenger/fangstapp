@@ -425,7 +425,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="field-group"><label class="field-label">Forhold</label>
       <select id="trip-conditions"><option value="">—</option><option>Klarvær</option><option>Overskyet</option><option>Regn</option><option>Vind</option><option>Tåke</option></select>
     </div>
-    <div class="field-group"><label class="field-label">Notater</label><textarea id="trip-notes" placeholder="Vanntemp, strøm, klekking..."></textarea></div>
     <div class="field-group">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)">
         <input type="checkbox" id="trip-is-club" style="width:18px;height:18px;cursor:pointer;accent-color:var(--river-mid)">
@@ -776,12 +775,11 @@ async function saveTrip(){
     date:document.getElementById('trip-date').value,
     date_end:document.getElementById('trip-date-end').value||null,
     conditions:document.getElementById('trip-conditions').value,
-    notes:document.getElementById('trip-notes').value.trim(),
     is_club_trip:isClub
   });
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-trip');
-  ['trip-name','trip-location','trip-notes'].forEach(id=>document.getElementById(id).value='');
+  ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('trip-date').value='';
   document.getElementById('trip-date-end').value='';
   document.getElementById('trip-conditions').value='';
@@ -816,19 +814,35 @@ function openTripDetail(tripId){
     </div>`).join('');
   const catchHtml = catches.length ? memberRows : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
   document.getElementById('trip-detail-content').innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
       <button class="back-btn" style="margin-bottom:0" onclick="closeModal('modal-trip-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Tilbake</button>
       <button onclick="deleteTrip('${t.id}')" style="background:none;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:0.35rem 0.75rem;cursor:pointer">🗑 Slett tur</button>
     </div>
-    <h2 style="font-family:'Lora',serif;font-size:1.4rem;font-weight:600;color:var(--ink)">${t.name}</h2>
-    <div style="font-size:0.8rem;color:var(--ink-light);margin:0.3rem 0 1.2rem">${t.date}${t.date_end && t.date_end!==t.date?" → "+t.date_end:""}${t.location?' · '+t.location:''}${t.conditions?' · '+t.conditions:''}</div>
-    ${t.notes?`<p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:1.2rem;line-height:1.5">${t.notes}</p>`:''}
-    <div style="background:var(--river-pale);border:1px solid var(--river-light);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--river)" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-      <p style="font-size:0.8rem;color:var(--river);flex:1">Del denne turen med venner</p>
-      <button onclick="copyShare('${t.id}')" style="background:var(--river-mid);border:none;border-radius:8px;color:white;font-size:0.78rem;font-weight:500;padding:0.4rem 0.85rem;cursor:pointer;font-family:'DM Sans',sans-serif">Kopier lenke</button>
+
+    <h2 style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:1rem">${t.name}</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem">
+      <div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">📅 Dato</div>
+        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.date}${t.date_end && t.date_end!==t.date?'<br>→ '+t.date_end:''}</div>
+      </div>
+      ${t.location?`<div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">📍 Lokasjon</div>
+        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.location}</div>
+      </div>`:''}
+      ${t.conditions?`<div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">🌤 Forhold</div>
+        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.conditions}</div>
+      </div>`:''}
+      <div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">🎣 Fangster</div>
+        <div style="font-size:0.85rem;font-weight:500;color:var(--river-mid)">${catches.length} stk</div>
+      </div>
     </div>
-    <div class="section-title">Fangster (${catches.length})</div>
+
+
+
+    <div class="section-title">Hvem fanget hva</div>
     ${catchHtml}
     <button class="btn-save" style="margin-top:1rem;width:100%" onclick="openCatchForTrip('${t.id}')">+ Logg en fangst på denne turen</button>`;
   openModal('modal-trip-detail');
@@ -1311,7 +1325,7 @@ function onTopPlus() {
   if (active && active.textContent.trim().startsWith('Logg')) openModal('modal-catch');
   else {
     // Clear trip form before opening
-    ['trip-name','trip-location','trip-notes'].forEach(id=>document.getElementById(id).value='');
+    ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('trip-date').value='';
     document.getElementById('trip-date-end').value='';
     document.getElementById('trip-conditions').value='';
