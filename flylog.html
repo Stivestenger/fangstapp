@@ -782,7 +782,9 @@ async function saveTrip(){
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-trip');
   ['trip-name','trip-location','trip-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trip-date').value='';
   document.getElementById('trip-date-end').value='';
+  document.getElementById('trip-conditions').value='';
   document.getElementById('trip-is-club').checked=false;
   showToast('Tur lagret!');loadData();
 }
@@ -1307,7 +1309,15 @@ async function fetchWeatherForLocation(lat, lon) {
 function onTopPlus() {
   const active = document.querySelector('.nav-item.active');
   if (active && active.textContent.trim().startsWith('Logg')) openModal('modal-catch');
-  else openModal('modal-trip');
+  else {
+    // Clear trip form before opening
+    ['trip-name','trip-location','trip-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('trip-date').value='';
+    document.getElementById('trip-date-end').value='';
+    document.getElementById('trip-conditions').value='';
+    document.getElementById('trip-is-club').checked=false;
+    openModal('modal-trip');
+  }
 }
 
 
