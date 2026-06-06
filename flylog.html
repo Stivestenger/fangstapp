@@ -216,7 +216,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <!-- MAIN APP -->
 <div class="screen" id="screen-app" style="display:flex;flex-direction:column;height:100vh">
   <div class="topbar">
-    <div class="logo"><img id="topbar-logo" src="" style="height:36px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
+    <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:36px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
     <button class="icon-btn" onclick="onTopPlus()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     </button>
@@ -308,9 +308,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('home',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Hjem
-    </div>
+
     <div class="nav-item" onclick="switchTab('map',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Kart
     </div>
@@ -647,7 +645,7 @@ function renderCatches(){
       <div class="catch-card-inner">
         <div class="catch-icon-box">${icon}</div>
         <div class="catch-body">
-          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);padding:0;font-size:0.75rem">✏️ Rediger</button></div>
+          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);padding:4px;font-size:1rem">✏️</button></div>
           <div class="catch-meta">${meta.join(' · ')||'<span>Ingen detaljer</span>'}</div>
           ${trip?`<div class="catch-trip-label">📍 ${trip.name}</div>`:''}
         </div>
@@ -856,9 +854,28 @@ function copyShare(tripId){
 }
 
 
+function switchTabByName(tab) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  ['home','map','log','trophy','profile'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'flex':'none';
+  });
+  if(tab!=='map') document.getElementById('tab-map').style.display='none';
+  if(tab==='map') {
+    const tabEl = document.getElementById('tab-map');
+    tabEl.style.display = 'flex';
+    const mapEl = document.getElementById('map');
+    if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
+    setTimeout(() => {
+      if(!mapInstance) initMap();
+      else mapInstance.invalidateSize();
+      setTimeout(() => renderMap(), 200);
+    }, 100);
+  }
+}
+
 function switchTab(tab,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
+  if(el) el.classList.add('active');
   if(tab==='trophy') renderTrophy();
   if(tab==='map') {
     const tabEl = document.getElementById('tab-map');
