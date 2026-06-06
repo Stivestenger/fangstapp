@@ -1341,7 +1341,7 @@ function onTopPlus() {
 
 
 async function deleteTrip(tripId) {
-  if (!confirm('Er du sikker på at du vil slette denne turen?')) return;
+  if (!confirm('Slette turen?')) return;
   showToast('Sletter...');
   try {
     await sb.from('catches').delete().eq('trip_id', tripId);
@@ -1432,7 +1432,7 @@ async function saveEditCatch() {
 
 
 async function deleteFromEdit() {
-  if (!confirm('Slette denne fangsten?')) return;
+  if (!confirm('Slette fangsten?')) return;
   const {error} = await sb.from('catches').delete().eq('id', editCatchId);
   if (error) { showToast('Kunne ikke slette: '+error.message); return; }
   closeModal('modal-edit-catch');
