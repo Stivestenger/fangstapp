@@ -34,7 +34,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .screen.active{display:flex}
 
 /* AUTH */
-.auth-bg{background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 2rem;min-height:100vh;overflow-y:auto}
+.auth-bg{background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:3rem 2rem 2rem;min-height:100vh;overflow-y:auto}
 .auth-logo{text-align:center;margin-bottom:2rem}
 .auth-logo .wordmark{font-family:'Lora',serif;font-size:2.8rem;color:#fff;letter-spacing:-0.02em;font-weight:600}
 .auth-logo .tagline{font-size:0.8rem;color:rgba(255,255,255,0.55);letter-spacing:0.15em;text-transform:uppercase;margin-top:0.3rem}
@@ -176,6 +176,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--river-mid);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;margin-bottom:1rem;padding:0}
 .back-btn svg{width:18px;height:18px}
 </style>
+<script>
+// Run before page renders - hide config if already set
+(function(){
+  var url = localStorage.getItem('sb_url');
+  var key = localStorage.getItem('sb_key');
+  if(url && key) {
+    document.addEventListener('DOMContentLoaded', function(){
+      var cfg = document.getElementById('supabase-config-form');
+      var note = document.getElementById('config-note');
+      var card = document.getElementById('auth-card');
+      if(cfg) cfg.style.display='none';
+      if(note) note.style.display='none';
+      if(card) card.style.display='block';
+    });
+  }
+})();
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
@@ -531,7 +548,6 @@ function initSupabase(){
   s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
   s.onload=()=>{
     sb=window.supabase.createClient(url,key);
-    
     document.getElementById('supabase-config-form').style.display='none';
     document.getElementById('config-note').style.display='none';
     document.getElementById('auth-card').style.display='block';
@@ -575,6 +591,10 @@ async function doAuth(){
 function enterApp(){
   document.getElementById('screen-auth').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
+  // Hard reset all tabs - show only home
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('tab-home').style.display = 'flex';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const em=currentUser?.email||'';
   const nick=getMyNickname();
   document.getElementById('profile-email').textContent=em;
@@ -582,14 +602,7 @@ function enterApp(){
   loadAvatar();
   upsertProfile();
   document.getElementById('trip-date').value=new Date().toISOString().split('T')[0];
-  // Always start on home tab
-  ['home','log','trophy','profile'].forEach(t=>{
-    const el = document.getElementById('tab-'+t);
-    if(el) el.style.display=t==='home'?'flex':'none';
-  });
-  const mapTab = document.getElementById('tab-map');
-  if(mapTab) mapTab.style.display='none';
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+
   registerPush();
   initTrophyYearSelect();
   loadData();
