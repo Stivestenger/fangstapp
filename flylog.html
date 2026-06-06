@@ -422,9 +422,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div class="field-group"><label class="field-label">Fra</label><input type="date" id="trip-date"></div>
       <div class="field-group"><label class="field-label">Til</label><input type="date" id="trip-date-end"></div>
     </div>
-    <div class="field-group"><label class="field-label">Forhold</label>
-      <select id="trip-conditions"><option value="">—</option><option>Klarvær</option><option>Overskyet</option><option>Regn</option><option>Vind</option><option>Tåke</option></select>
-    </div>
     <div class="field-group">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)">
         <input type="checkbox" id="trip-is-club" style="width:18px;height:18px;cursor:pointer;accent-color:var(--river-mid)">
@@ -774,7 +771,6 @@ async function saveTrip(){
     location:document.getElementById('trip-location').value.trim(),
     date:document.getElementById('trip-date').value,
     date_end:document.getElementById('trip-date-end').value||null,
-    conditions:document.getElementById('trip-conditions').value,
     is_club_trip:isClub
   });
   if(error){showToast('Feil: '+error.message);return}
@@ -782,7 +778,6 @@ async function saveTrip(){
   ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('trip-date').value='';
   document.getElementById('trip-date-end').value='';
-  document.getElementById('trip-conditions').value='';
   document.getElementById('trip-is-club').checked=false;
   showToast('Tur lagret!');loadData();
 }
@@ -830,10 +825,7 @@ function openTripDetail(tripId){
         <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">📍 Lokasjon</div>
         <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.location}</div>
       </div>`:''}
-      ${t.conditions?`<div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
-        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">🌤 Forhold</div>
-        <div style="font-size:0.85rem;font-weight:500;color:var(--ink)">${t.conditions}</div>
-      </div>`:''}
+
       <div style="background:var(--paper);border-radius:10px;padding:0.75rem 0.9rem">
         <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:3px">🎣 Fangster</div>
         <div style="font-size:0.85rem;font-weight:500;color:var(--river-mid)">${catches.length} stk</div>
@@ -1328,8 +1320,7 @@ function onTopPlus() {
     ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('trip-date').value='';
     document.getElementById('trip-date-end').value='';
-    document.getElementById('trip-conditions').value='';
-    document.getElementById('trip-is-club').checked=false;
+      document.getElementById('trip-is-club').checked=false;
     openModal('modal-trip');
   }
 }
