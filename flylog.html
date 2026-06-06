@@ -582,6 +582,12 @@ function enterApp(){
   loadAvatar();
   upsertProfile();
   document.getElementById('trip-date').value=new Date().toISOString().split('T')[0];
+  // Always start on home tab
+  ['home','log','trophy','profile'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t==='home'?'flex':'none';
+  });
+  document.getElementById('tab-map').style.display='none';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   registerPush();
   initTrophyYearSelect();
   loadData();
@@ -1404,6 +1410,10 @@ const cfg=loadConfig();
 if(cfg.url&&cfg.key){
   document.getElementById('cfg-url').value=cfg.url;
   document.getElementById('cfg-key').value=cfg.key;
+  // Hide config form immediately and show login
+  document.getElementById('supabase-config-form').style.display='none';
+  document.getElementById('config-note').style.display='none';
+  document.getElementById('auth-card').style.display='block';
   initSupabase();
 }
 
