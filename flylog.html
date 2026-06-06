@@ -264,7 +264,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
   <div id="tab-log" class="scroll-area" style="display:none;flex-direction:column">
     <div class="section-title">Alle fangster</div>
-    <div id="catches-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div></div>
+    <div id="catches-list" style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:14px;overflow:hidden"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div></div>
   </div>
 
   <div id="tab-profile" class="scroll-area" style="display:none;flex-direction:column">
@@ -515,6 +515,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 </div>
 
+<!-- MODAL: PHOTO ZOOM -->
+<div class="modal-overlay" id="modal-photo-zoom" style="z-index:9000;align-items:center;justify-content:center;padding:1rem" onclick="closeModal('modal-photo-zoom')">
+  <img id="photo-zoom-img" src="" style="max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain">
+</div>
+
 <!-- MODAL: CONFIRM -->
 <div class="modal-overlay" id="modal-confirm" style="z-index:10000">
   <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
@@ -675,17 +680,14 @@ function renderCatches(){
     if(c.weight)meta.push(`${c.weight}g`);
     if(c.fly)meta.push(`🪰 ${c.fly}${c.fly_size?' '+c.fly_size:''}`);
     const photoUrl=c.photo_path?getPhotoUrl(c.photo_path):null;
-    const wHtml=c.weather_temp!=null?`<div class="weather-strip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 110-14 7 7 0 0114 0 4 4 0 01-4 4H9"/></svg>${c.weather_desc||'Weather'} · ${Math.round(c.weather_temp)}°C · 💨 ${Math.round(c.weather_wind)} km/h · 💧 ${Math.round(c.weather_humidity)}%</div>`:'';
-    return`<div class="catch-card" id="catch-${c.id}">
-      ${photoUrl?`<img class="catch-photo" src="${photoUrl}" alt="catch photo" loading="lazy">`:''}
-      <div class="catch-card-inner">
-        <div class="catch-body">
-          <div class="species" style="display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:rgba(0,0,0,0.3);padding:6px;font-size:1.1rem;line-height:1">✎</button></div>
-          <div class="catch-meta">${meta.join(' · ')||'<span>Ingen detaljer</span>'}</div>
-          ${trip?`<div class="catch-trip-label">📍 ${trip.name}</div>`:''}
-        </div>
+    const wHtml='';
+    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06);background:var(--white);border-radius:0;margin-bottom:0">
+      ${photoUrl?`<img src="${photoUrl}" onclick="openPhotoZoom('${photoUrl}')" alt="catch" loading="lazy" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer">`:'<div style="width:48px;height:48px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎣</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500;font-size:0.9rem;color:var(--ink);display:flex;align-items:center;justify-content:space-between">${c.species||'Ukjent'}<button onclick="event.stopPropagation();openEditCatch('${c.id}')" style="background:none;border:none;cursor:pointer;color:rgba(0,0,0,0.25);padding:4px;font-size:1rem;line-height:1;flex-shrink:0">✎</button></div>
+        <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.join(' · ')||'—'}</div>
+        ${trip?`<div style="font-size:0.7rem;color:var(--river-mid);margin-top:2px">📍 ${trip.name}</div>`:''}
       </div>
-      ${wHtml}
     </div>`
   }).join('');
 }
@@ -1476,6 +1478,12 @@ function showConfirm(message) {
     };
     openModal('modal-confirm');
   });
+}
+
+
+function openPhotoZoom(url) {
+  document.getElementById('photo-zoom-img').src = url;
+  openModal('modal-photo-zoom');
 }
 
 let toastTimer=null;
