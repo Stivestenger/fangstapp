@@ -20,9 +20,6 @@
 }
 
 .catch-card{position:relative;overflow:hidden}
-.catch-delete-bg{position:absolute;right:0;top:0;bottom:0;width:80px;background:#c0392b;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.78rem;font-weight:500;flex-direction:column;gap:3px;opacity:0;transition:opacity 0.2s}
-.catch-delete-bg svg{width:20px;height:20px}
-.catch-card-swipe{transition:transform 0.2s ease;touch-action:pan-y}
 
 
 .profile-avatar{cursor:pointer;position:relative;overflow:hidden}
@@ -600,7 +597,7 @@ async function loadData(){
   const myIds=new Set(allTrips.map(t=>t.id));
   (allTr.data||[]).forEach(t=>{ if(!myIds.has(t.id)) allTrips.push(t); });
   allTrips.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  renderHome();renderCatches();populateTripSelect();renderTrophy();initAllSwipes();if(document.getElementById("tab-map").style.display!=="none")renderMap();
+  renderHome();renderCatches();populateTripSelect();renderTrophy();if(document.getElementById("tab-map").style.display!=="none")renderMap();
 }
 
 function getPhotoUrl(path){
@@ -1089,104 +1086,6 @@ function initTrophyYearSelect() {
 
 // Swipe to delete
 
-function initAllSwipes() {
-  // Swipe delete removed - delete via edit modal instead
-}
-
-function initSwipeDelete(el, catchId, ownerId) {
-  if (!el) return;
-  if (ownerId !== currentUser?.id) return; // only own catches
-  let startX = 0, currentX = 0, swiping = false;
-  const inner = el.querySelector('.catch-card-swipe') || el;
-  let bg = el.querySelector('.catch-delete-bg');
-  if (!bg) {
-    bg = document.createElement('div');
-    bg.className = 'catch-delete-bg';
-    bg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Slett';
-    el.appendChild(bg);
-  }
-  bg.onclick = async () => {
-    if (!confirm('Slette denne fangsten?')) { resetSwipe(); return; }
-    const {error} = await sb.from('catches').delete().eq('id', catchId);
-    if (error) { showToast('Kunne ikke slette'); return; }
-    showToast('Fangst slettet');
-    loadData();
-  };
-  function resetSwipe() {
-    inner.style.transform = 'translateX(0)';
-    bg.style.opacity = '0';
-    currentX = 0;
-  }
-  el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; swiping = true; }, {passive:true});
-  el.addEventListener('touchmove', e => {
-    if (!swiping) return;
-    const dx = e.touches[0].clientX - startX;
-    if (dx > 0) return;
-    currentX = Math.max(dx, -80);
-    inner.style.transform = `translateX(${currentX}px)`;
-    bg.style.opacity = Math.abs(currentX) / 80;
-  }, {passive:true});
-  el.addEventListener('touchend', () => {
-    swiping = false;
-    if (currentX < -50) {
-      inner.style.transform = 'translateX(-80px)';
-      bg.style.opacity = '1';
-    } else {
-      resetSwipe();
-    }
-  });
-  // Also allow mouse for desktop testing
-  el.addEventListener('mousedown', e => { startX = e.clientX; swiping = true; });
-  el.addEventListener('mousemove', e => {
-    if (!swiping) return;
-    const dx = e.clientX - startX;
-    if (dx > 0) return;
-    currentX = Math.max(dx, -80);
-    inner.style.transform = `translateX(${currentX}px)`;
-    bg.style.opacity = Math.abs(currentX) / 80;
-  });
-  el.addEventListener('mouseup', () => {
-    swiping = false;
-    if (currentX < -50) {
-      inner.style.transform = 'translateX(-80px)';
-      bg.style.opacity = '1';
-    } else { resetSwipe(); }
-  });
-}
-
-
-async function openNicknameEditor() {
-  const cur = getMyNickname();
-  document.getElementById('nickname-input').value = cur;
-  openModal('modal-nickname');
-}
-
-async function upsertProfile() {
-  if (!sb || !currentUser) return;
-  const nick = getMyNickname();
-  const avatarUrl = currentUser?.user_metadata?.avatar_url || null;
-  await sb.from('profiles').upsert({
-    id: currentUser.id,
-    nickname: nick,
-    avatar_url: avatarUrl,
-    updated_at: new Date().toISOString()
-  }, {onConflict: 'id'});
-  allProfiles[currentUser.id] = {id: currentUser.id, nickname: nick, avatar_url: avatarUrl};
-}
-
-async function saveNickname() {
-  const nick = document.getElementById('nickname-input').value.trim();
-  if (!nick) { showToast('Skriv inn et kallenavn'); return; }
-  const {error} = await sb.auth.updateUser({data: {nickname: nick}});
-  if (error) { showToast('Kunne ikke lagre: '+error.message); return; }
-  currentUser.user_metadata = {...(currentUser.user_metadata||{}), nickname: nick};
-  document.getElementById('profile-name').textContent = nick;
-  loadAvatar();
-  closeModal('modal-nickname');
-  await upsertProfile();
-  renderTrophy();
-  showToast('Kallenavn oppdatert! 🎣');
-}
 
 
 function loadAvatar() {
