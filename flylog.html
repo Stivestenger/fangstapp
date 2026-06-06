@@ -769,12 +769,15 @@ async function saveTrip(){
   if(!sb)return;
   const name=document.getElementById('trip-name').value.trim();
   if(!name){showToast('Turen trenger et navn');return}
+  const selectedMembers=[...document.querySelectorAll('.trip-member-cb:checked')].map(cb=>cb.value);
+  const isClub=selectedMembers.length>1;
   const {error}=await sb.from('trips').insert({
     user_id:currentUser.id,name,
     location:document.getElementById('trip-location').value.trim(),
     date:document.getElementById('trip-date').value,
     date_end:document.getElementById('trip-date-end').value||null,
-    is_club_trip:isClub
+    is_club_trip:isClub,
+    members:selectedMembers
   });
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-trip');
