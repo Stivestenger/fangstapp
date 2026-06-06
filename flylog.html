@@ -30,11 +30,11 @@
 
 body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
 #app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
-.screen{display:none;flex-direction:column;flex:1;min-height:100vh}
+.screen{display:none;flex-direction:column;flex:1;min-height:100vh}.screen#screen-auth{position:fixed;inset:0;z-index:1000;overflow-y:auto}
 .screen.active{display:flex}
 
 /* AUTH */
-.auth-bg{background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 2rem;min-height:100vh}
+.auth-bg{background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 2rem;min-height:100vh;overflow-y:auto}
 .auth-logo{text-align:center;margin-bottom:2rem}
 .auth-logo .wordmark{font-family:'Lora',serif;font-size:2.8rem;color:#fff;letter-spacing:-0.02em;font-weight:600}
 .auth-logo .tagline{font-size:0.8rem;color:rgba(255,255,255,0.55);letter-spacing:0.15em;text-transform:uppercase;margin-top:0.3rem}
@@ -1410,11 +1410,14 @@ const cfg=loadConfig();
 if(cfg.url&&cfg.key){
   document.getElementById('cfg-url').value=cfg.url;
   document.getElementById('cfg-key').value=cfg.key;
-  // Hide config form immediately and show login
   document.getElementById('supabase-config-form').style.display='none';
   document.getElementById('config-note').style.display='none';
   document.getElementById('auth-card').style.display='block';
   initSupabase();
+} else {
+  document.getElementById('auth-card').style.display='none';
+  document.getElementById('supabase-config-form').style.display='block';
+  document.getElementById('config-note').style.display='block';
 }
 
 
