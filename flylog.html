@@ -520,6 +520,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   <img id="photo-zoom-img" src="" style="max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain">
 </div>
 
+<!-- MODAL: PASSWORD RECOVERY -->
+<div class="modal-overlay" id="modal-recovery" style="z-index:10000">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nytt passord</div>
+    <div class="field-group">
+      <label class="field-label">Nytt passord</label>
+      <input type="password" id="recovery-password" placeholder="Minimum 6 tegn">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Bekreft passord</label>
+      <input type="password" id="recovery-password-confirm" placeholder="Gjenta passord">
+    </div>
+    <div id="recovery-error" style="color:var(--danger);font-size:0.82rem;margin-bottom:0.5rem;display:none"></div>
+    <div class="modal-actions">
+      <button class="btn-save" onclick="saveNewPassword()">Lagre passord</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIRM -->
 <div class="modal-overlay" id="modal-confirm" style="z-index:10000">
   <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
@@ -565,6 +585,7 @@ function initSupabase(){
   s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
   s.onload=()=>{
     sb=window.supabase.createClient(url,key);
+    handlePasswordRecovery();
     document.getElementById('supabase-config-form').style.display='none';
     document.getElementById('config-note').style.display='none';
     document.getElementById('auth-card').style.display='block';
@@ -1527,6 +1548,35 @@ function showConfirm(message) {
 function openPhotoZoom(url) {
   document.getElementById('photo-zoom-img').src = url;
   openModal('modal-photo-zoom');
+}
+
+
+// Password recovery
+async function handlePasswordRecovery() {
+  if (!sb) return;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      openModal('modal-recovery');
+    }
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      enterApp();
+    }
+  });
+}
+
+async function saveNewPassword() {
+  const password = document.getElementById('recovery-password').value;
+  const confirm = document.getElementById('recovery-password-confirm').value;
+  const errEl = document.getElementById('recovery-error');
+  errEl.style.display = 'none';
+  if (password.length < 6) { errEl.textContent = 'Passord må være minst 6 tegn'; errEl.style.display = 'block'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passordene er ikke like'; errEl.style.display = 'block'; return; }
+  const {error} = await sb.auth.updateUser({password});
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  closeModal('modal-recovery');
+  showToast('Passord oppdatert! Logg inn på nytt.');
+  await sb.auth.signOut();
 }
 
 let toastTimer=null;
