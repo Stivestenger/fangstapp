@@ -811,26 +811,57 @@ function openTripDetail(tripId){
   const myNick=getMyNickname();
   const isParticipant=!t.members||t.members.length===0||t.members.includes(myNick)||t.user_id===currentUser.id;
   const catches=allCatches.filter(c=>c.trip_id===tripId);
-  // Group catches by member
+  // Summary stats
+  const totalCatches = catches.length;
+  const heaviestCatch = catches.reduce((max, c) => parseFloat(c.weight||0) > parseFloat(max.weight||0) ? c : max, {weight:0});
+  const heaviestNick = heaviestCatch.user_id ? getNickByUserId(heaviestCatch.user_id) : null;
+
+  // Member summary
   const memberStats = {};
   catches.forEach(c => {
     const nick = getNickByUserId(c.user_id);
-    if (!memberStats[nick]) memberStats[nick] = {count:0, heaviest:0, isMe: c.user_id===currentUser.id};
+    if (!memberStats[nick]) memberStats[nick] = {count:0, heaviest:0};
     memberStats[nick].count++;
     const w = parseFloat(c.weight)||0;
     if(w > memberStats[nick].heaviest) memberStats[nick].heaviest = w;
   });
-  const memberRows = Object.entries(memberStats)
+
+  const memberSummary = Object.entries(memberStats)
     .sort((a,b)=>b[1].count-a[1].count)
-    .map(([name,s])=>`<div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:10px;margin-bottom:0.5rem">
-      ${getAvatarHtml(null,name,36)}
-      <div style="flex:1">
-        <div style="font-weight:500;font-size:0.92rem;color:var(--ink)">${name}</div>
-        <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${s.heaviest>0?'Tyngste: '+s.heaviest+'g':''}</div>
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--river-mid)">${s.count} 🎣</div>
+    .map(([name,s])=>`<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid rgba(0,0,0,0.05)">
+      ${getAvatarHtml(null,name,32)}
+      <div style="flex:1;font-weight:500;font-size:0.88rem;color:var(--ink)">${name}</div>
+      <div style="font-size:0.78rem;color:var(--ink-light)">${s.heaviest>0?s.heaviest+'g · ':''}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.9rem;font-weight:600;color:var(--river-mid)">${s.count} 🎣</div>
     </div>`).join('');
-  const catchHtml = catches.length ? memberRows : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
+
+  // Individual catches list
+  const catchList = catches.length ? catches.map(c => {
+    const photoUrl = c.photo_path ? getPhotoUrl(c.photo_path) : null;
+    const nick = getNickByUserId(c.user_id);
+    const meta = [];
+    if(c.weight) meta.push(c.weight+'g');
+    if(c.fly) meta.push('🪰 '+c.fly+(c.fly_size?' '+c.fly_size:''));
+    return`<div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0;border-bottom:1px solid rgba(0,0,0,0.05)">
+      ${photoUrl
+        ? `<img src="${photoUrl}" onclick="openPhotoZoom('${photoUrl}')" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer" loading="lazy">`
+        : `<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎣</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}</div>
+        <div style="font-size:0.73rem;color:var(--ink-light);margin-top:1px">${meta.join(' · ')||'—'}</div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--moss-mid);font-weight:500;flex-shrink:0">${nick}</div>
+    </div>`
+  }).join('') : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
+
+  const catchHtml = catches.length ? `
+    <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.75rem 1rem;margin-bottom:1rem">
+      ${memberSummary}
+    </div>
+    <div class="section-title" style="margin-top:0.5rem">Alle fangster</div>
+    <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.25rem 1rem">
+      ${catchList}
+    </div>` : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
   document.getElementById('trip-detail-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
       <button class="back-btn" style="margin-bottom:0" onclick="closeModal('modal-trip-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Tilbake</button>
@@ -861,7 +892,7 @@ function openTripDetail(tripId){
 
 
 
-    <div class="section-title">Hvem fanget hva</div>
+    <div class="section-title">Fangster (${catches.length})</div>
     ${catchHtml}
     ${isParticipant ? `<button class="btn-save" style="margin-top:1rem;width:100%" onclick="openCatchForTrip('${t.id}')">+ Logg en fangst på denne turen</button>` : ''}`;
   openModal('modal-trip-detail');
