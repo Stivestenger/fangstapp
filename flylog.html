@@ -662,7 +662,7 @@ function renderHome(){
     const wc=tc.find(c=>c.weather_temp!=null);
     const wHtml=wc?`<span class="weather-badge">🌤 ${wc.weather_desc||'Weather logged'}</span>`:'';
     return`<div class="trip-card" onclick="openTripDetail('${t.id}')">
-      <div class="trip-header"><div class="trip-name">${t.name}${t.is_club_trip?'<span style="font-size:0.65rem;background:var(--river-pale);color:var(--river);padding:2px 7px;border-radius:10px;margin-left:6px;font-family:DM Sans,sans-serif;font-weight:500">Klubbtur</span>':''}</div><div class="trip-date">${formatDate(t.date)}${t.date_end && t.date_end!==t.date?" → "+formatDate(t.date_end):""}</div></div>
+      <div class="trip-header"><div class="trip-name">${t.name}</div><div class="trip-date">${formatMonthYear(t.date)}</div></div>
       <div class="trip-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${t.location||'Ingen lokasjon'}</div>
       <div class="trip-fish">${pillsHtml}${wHtml}</div>
     </div>`
@@ -1466,6 +1466,15 @@ function formatDate(dateStr) {
   const month = months[d.getMonth()];
   const year = String(d.getFullYear()).slice(2);
   return `${day} ${month} '${year}`;
+}
+
+function formatMonthYear(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+  const month = months[d.getMonth()];
+  const year = String(d.getFullYear()).slice(2);
+  return `${month} '${year}`;
 }
 
 
