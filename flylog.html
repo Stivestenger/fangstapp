@@ -746,7 +746,7 @@ function renderCatches(){
     const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
-    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06);background:var(--white);border-radius:0;margin-bottom:0;cursor:pointer" onclick="openCatchDetail('${c.id}')">
+    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06);background:var(--white);border-radius:0;margin-bottom:0;cursor:pointer" onclick="openCatchDetailWithPhotos('${c.id}')">
       ${photoUrl?`<img src="${photoUrl}" alt="catch" loading="lazy" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0">`:'<div style="width:48px;height:48px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎣</div>'}
       <div style="flex:1;min-width:0">
         <div style="font-weight:500;font-size:0.9rem;color:var(--ink)">${c.species||'Ukjent'}${c.weight?' · '+c.weight+'g':''}</div>
@@ -1702,19 +1702,87 @@ async function fetchHistoricalWeather(lat, lon, dateStr, timeStr) {
 }
 
 
-function openCatchDetail(catchId) {
+
+
+async function deleteCatchFromDetail(catchId) {
+  if (!await showConfirm('Slette fangsten?')) return;
+  const {error} = await sb.from('catches').delete().eq('id', catchId);
+  if (error) { showToast('Kunne ikke slette: '+error.message); return; }
+  closeModal('modal-catch-detail');
+  showToast('Fangst slettet');
+  loadData();
+}
+
+
+// MULTIPLE CATCH PHOTOS
+async function loadCatchPhotos(catchId) {
+  if (!sb) return [];
+  const {data, error} = await sb.from('catch_photos').select('*').eq('catch_id', catchId).order('created_at', {ascending: true});
+  if (error) return [];
+  return data || [];
+}
+
+async function uploadCatchPhoto(catchId, file) {
+  if (!file || !sb) return null;
+  const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
+  const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
+  const path = `${currentUser.id}/catch_${catchId}_${Date.now()}.${safeExt}`;
+  const arrayBuf = await file.arrayBuffer();
+  const {error} = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
+  if (error) { showToast('Bildeopplasting feilet'); return null; }
+  await sb.from('catch_photos').insert({catch_id: catchId, user_id: currentUser.id, photo_path: path});
+  return path;
+}
+
+let currentCarouselIndex = 0;
+let currentCarouselPhotos = [];
+
+function showCarousel(photos, index) {
+  currentCarouselPhotos = photos;
+  currentCarouselIndex = index;
+  const container = document.getElementById('catch-photo-carousel');
+  const dots = document.getElementById('carousel-dots');
+  if (!container) return;
+  const url = photos[index];
+  container.innerHTML = `<img src="${url}" onclick="openPhotoZoom('${url}')" style="width:100%;height:200px;object-fit:cover;border-radius:12px;cursor:pointer;display:block">`;
+  if (dots) {
+    dots.innerHTML = photos.map((_, i) => 
+      `<div onclick="showCarousel(currentCarouselPhotos, ${i})" style="width:7px;height:7px;border-radius:50%;background:${i===index?'var(--river-mid)':'rgba(0,0,0,0.2)'};cursor:pointer;transition:background 0.2s"></div>`
+    ).join('');
+  }
+}
+
+function swipeCarousel(dir) {
+  if (!currentCarouselPhotos.length) return;
+  currentCarouselIndex = (currentCarouselIndex + dir + currentCarouselPhotos.length) % currentCarouselPhotos.length;
+  showCarousel(currentCarouselPhotos, currentCarouselIndex);
+}
+
+async function openCatchDetailWithPhotos(catchId) {
   const c = allCatches.find(x => x.id === catchId);
   if (!c) return;
+  
+  // Load all photos
+  const dbPhotos = await loadCatchPhotos(catchId);
+  const allPhotoUrls = [];
+  // Include legacy photo_path
+  if (c.photo_path) {
+    const url = getPhotoUrl(c.photo_path);
+    if (url) allPhotoUrls.push(url);
+  }
+  dbPhotos.forEach(p => {
+    const url = getPhotoUrl(p.photo_path);
+    if (url && !allPhotoUrls.includes(url)) allPhotoUrls.push(url);
+  });
+
   const trip = allTrips.find(t => t.id === c.trip_id);
   const nick = getNickByUserId(c.user_id);
-  const photoUrl = c.photo_path ? getPhotoUrl(c.photo_path) : null;
+  const isOwn = c.user_id === currentUser.id;
   const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
   const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
-  const isOwn = c.user_id === currentUser.id;
 
   const details = [];
   if (catchDateDisplay) details.push({icon:'📅', label:'Dato', val: catchDateDisplay + (catchTimeDisplay?' · '+catchTimeDisplay:'')});
-  if (c.weather_lat && c.weather_lon) details.push({icon:'📍', label:'Posisjon', val: c.weather_lat.toFixed(4)+', '+c.weather_lon.toFixed(4)});
   if (c.fly) details.push({icon:'🪰', label:'Flue', val: c.fly + (c.fly_size?' '+c.fly_size:'')});
   if (c.weather_temp != null) details.push({icon:'🌤', label:'Vær', val: (c.weather_desc||'') + ' · ' + Math.round(c.weather_temp)+'°C · 💨 '+Math.round(c.weather_wind)+' km/h'});
   if (trip) details.push({icon:'🗺️', label:'Tur', val: trip.name});
@@ -1733,7 +1801,33 @@ function openCatchDetail(catchId) {
         <button onclick="deleteCatchFromDetail('${c.id}')" style="width:34px;height:34px;background:none;border:1px solid var(--danger);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
       </div>`:''}
     </div>
-    ${photoUrl?`<img src="${photoUrl}" onclick="openPhotoZoom('${photoUrl}')" style="width:100%;border-radius:12px;aspect-ratio:4/3;object-fit:cover;margin-bottom:1rem;cursor:pointer" loading="lazy">`:''}
+
+    ${allPhotoUrls.length > 0 ? `
+    <div style="position:relative;margin-bottom:1rem">
+      <div id="catch-photo-carousel"></div>
+      ${allPhotoUrls.length > 1 ? `
+        <button onclick="swipeCarousel(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(255,255,255,0.85);border:none;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">‹</button>
+        <button onclick="swipeCarousel(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(255,255,255,0.85);border:none;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">›</button>
+        <div id="carousel-dots" style="display:flex;justify-content:center;gap:6px;margin-top:8px"></div>
+      ` : '<div id="carousel-dots"></div>'}
+    </div>` : ''}
+
+    ${isOwn ? `
+    <div style="margin-bottom:1rem">
+      <input type="file" id="add-catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="addCatchPhoto(event,'${c.id}')">
+      <input type="file" id="add-catch-photo-library" accept="image/*" style="display:none" onchange="addCatchPhoto(event,'${c.id}')">
+      <div style="display:flex;gap:8px">
+        <button type="button" class="weather-fetch-btn" style="flex:1;font-size:0.8rem" onclick="document.getElementById('add-catch-photo-camera').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Ta bilde
+        </button>
+        <button type="button" class="weather-fetch-btn" style="flex:1;font-size:0.8rem" onclick="document.getElementById('add-catch-photo-library').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Legg til bilde
+        </button>
+      </div>
+    </div>` : ''}
+
     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
       <div>
         <h2 style="font-family:'Lora',serif;font-size:1.4rem;font-weight:600;color:var(--ink)">${c.species||'Ukjent'}</h2>
@@ -1746,17 +1840,20 @@ function openCatchDetail(catchId) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
       ${detailGrid}
     </div>`;
+
   openModal('modal-catch-detail');
+  if (allPhotoUrls.length > 0) showCarousel(allPhotoUrls, 0);
 }
 
-
-async function deleteCatchFromDetail(catchId) {
-  if (!await showConfirm('Slette fangsten?')) return;
-  const {error} = await sb.from('catches').delete().eq('id', catchId);
-  if (error) { showToast('Kunne ikke slette: '+error.message); return; }
-  closeModal('modal-catch-detail');
-  showToast('Fangst slettet');
-  loadData();
+async function addCatchPhoto(event, catchId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  showToast('Laster opp bilde...');
+  const path = await uploadCatchPhoto(catchId, file);
+  if (path) {
+    showToast('Bilde lagt til! 📸');
+    openCatchDetailWithPhotos(catchId);
+  }
 }
 
 let toastTimer=null;
