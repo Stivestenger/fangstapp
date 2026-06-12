@@ -1190,7 +1190,7 @@ function getMemberName(email, metadata) {
 function getNickByUserId(userId) {
   if (!userId) return 'Ukjent';
   if (userId === currentUser?.id) return getMyNickname();
-  const profile = allProfiles[userId];
+  const profile = (allProfiles||[]).find(p => p.id === userId);
   if (profile && profile.nickname) return profile.nickname;
   return 'Ukjent';
 }
