@@ -1345,7 +1345,7 @@ async function uploadAvatar(e) {
   if (!file || !sb) return;
   showToast('Laster opp bilde...');
   const ext = file.name.split('.').pop() || 'jpg';
-  const path = `avatars/${currentUser.id}.${ext}`;
+  const path = `${currentUser.id}/avatar.${ext}`;
   const arrayBuf = await file.arrayBuffer();
   const {error} = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg', upsert: true});
   if (error) { showToast('Kunne ikke laste opp: '+error.message); return; }
