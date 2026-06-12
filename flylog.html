@@ -702,6 +702,7 @@ function enterApp(){
   document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
   document.getElementById('tab-home').style.display = 'flex';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('.nav-item[onclick*="home"]')?.classList.add('active');
   loadAvatar();
   setTimeout(() => upsertProfile(), 1000);
 
