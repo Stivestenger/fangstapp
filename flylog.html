@@ -2056,6 +2056,7 @@ async function saveNickname() {
   closeModal('modal-nickname');
   showToast('Kallenavn oppdatert! ✓');
   await upsertProfile();
+  loadData();
 }
 
 let toastTimer=null;
