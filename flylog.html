@@ -30,7 +30,7 @@
 
 .profile-avatar{cursor:pointer;position:relative;overflow:hidden;width:72px;height:72px;border-radius:50%;background:var(--river-mid);flex-shrink:0}
 .profile-avatar .avatar-img{width:72px;height:72px;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0}
-.profile-avatar .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;border-radius:50%}
+.profile-avatar .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;opacity:1;transition:opacity 0.2s;border-radius:50%}
 .profile-avatar:hover .avatar-overlay{opacity:1}
 .profile-avatar .avatar-overlay svg{width:20px;height:20px;color:#fff}
 
@@ -731,7 +731,7 @@ async function loadData(){
   const myIds=new Set(allTrips.map(t=>t.id));
   (allTr.data||[]).forEach(t=>{ if(!myIds.has(t.id)) allTrips.push(t); });
   allTrips.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  renderHome();renderCatches();populateTripSelect();renderTrophy();if(document.getElementById("tab-map").style.display!=="none")renderMap();
+  renderHome();renderCatches();populateTripSelect();setTimeout(renderTrophy,200);if(document.getElementById("tab-map").style.display!=="none")renderMap();
 }
 
 function getPhotoUrl(path){
