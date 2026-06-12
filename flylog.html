@@ -2053,9 +2053,9 @@ async function saveNickname() {
   if (error) { showToast('Feil: ' + error.message); return; }
   currentUser.user_metadata = {...(currentUser.user_metadata||{}), nickname: nick};
   document.getElementById('profile-name').textContent = nick;
-  await upsertProfile();
   closeModal('modal-nickname');
   showToast('Kallenavn oppdatert! ✓');
+  await upsertProfile();
 }
 
 let toastTimer=null;
