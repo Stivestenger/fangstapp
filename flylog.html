@@ -541,6 +541,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 </div>
 
+<!-- MODAL: EDIT TRIP -->
+<div class="modal-overlay" id="modal-edit-trip">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Rediger tur</div>
+    <div class="field-group"><label class="field-label">Turnavn</label><input type="text" id="edit-trip-name" placeholder="f.eks. Glomma åpningsdag"></div>
+    <div class="field-group"><label class="field-label">Lokasjon</label><input type="text" id="edit-trip-location" placeholder="Elv eller innsjø"></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Fra</label><input type="date" id="edit-trip-date"></div>
+      <div class="field-group"><label class="field-label">Til</label><input type="date" id="edit-trip-date-end"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Deltakere</label>
+      <div id="edit-trip-members-list" style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Pål" style="width:18px;height:18px;accent-color:var(--river-mid)"> Pål</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Fredrik" style="width:18px;height:18px;accent-color:var(--river-mid)"> Fredrik</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Christoffer" style="width:18px;height:18px;accent-color:var(--river-mid)"> Christoffer</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars-Petter" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars-Petter</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-trip')">Avbryt</button>
+      <button class="btn-save" onclick="saveEditTrip()">Lagre</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIRM -->
 <div class="modal-overlay" id="modal-confirm" style="z-index:10000">
   <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
@@ -887,7 +915,10 @@ function openTripDetail(tripId){
   document.getElementById('trip-detail-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
       <button class="back-btn" style="margin-bottom:0" onclick="closeModal('modal-trip-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Tilbake</button>
-      ${isParticipant ? `<button onclick="deleteTrip('${t.id}')" style="background:none;border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-family:'DM Sans',sans-serif;font-size:0.78rem;padding:0.35rem 0.75rem;cursor:pointer">🗑 Slett tur</button>` : ''}
+      ${isParticipant ? `<div style="display:flex;gap:0.5rem">
+        <button onclick="openEditTrip('${t.id}')" style="width:34px;height:34px;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-light)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button onclick="deleteTrip('${t.id}')" style="width:34px;height:34px;background:none;border:1px solid var(--danger);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--danger)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+      </div>` : ''}
     </div>
 
     <h2 style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:1rem">${t.name}</h2>
@@ -1578,6 +1609,44 @@ async function saveNewPassword() {
   closeModal('modal-recovery');
   showToast('Passord oppdatert! Logg inn på nytt.');
   await sb.auth.signOut();
+}
+
+
+let editTripId = null;
+
+function openEditTrip(tripId) {
+  const t = allTrips.find(x => x.id === tripId);
+  if (!t) return;
+  editTripId = tripId;
+  document.getElementById('edit-trip-name').value = t.name || '';
+  document.getElementById('edit-trip-location').value = t.location || '';
+  document.getElementById('edit-trip-date').value = t.date || '';
+  document.getElementById('edit-trip-date-end').value = t.date_end || '';
+  const members = t.members || [];
+  document.querySelectorAll('.edit-trip-member-cb').forEach(cb => {
+    cb.checked = members.includes(cb.value);
+  });
+  closeModal('modal-trip-detail');
+  setTimeout(() => openModal('modal-edit-trip'), 300);
+}
+
+async function saveEditTrip() {
+  if (!sb || !editTripId) return;
+  const name = document.getElementById('edit-trip-name').value.trim();
+  if (!name) { showToast('Turen trenger et navn'); return; }
+  const selectedMembers = [...document.querySelectorAll('.edit-trip-member-cb:checked')].map(cb => cb.value);
+  const {error} = await sb.from('trips').update({
+    name,
+    location: document.getElementById('edit-trip-location').value.trim(),
+    date: document.getElementById('edit-trip-date').value,
+    date_end: document.getElementById('edit-trip-date-end').value || null,
+    members: selectedMembers,
+    is_club_trip: selectedMembers.length > 1
+  }).eq('id', editTripId);
+  if (error) { showToast('Feil: ' + error.message); return; }
+  closeModal('modal-edit-trip');
+  showToast('Tur oppdatert! ✓');
+  loadData();
 }
 
 let toastTimer=null;
