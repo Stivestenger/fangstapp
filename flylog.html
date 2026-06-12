@@ -779,7 +779,24 @@ function renderCatches(){
     return;
   }
 
+  const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+  let lastMonthKey = null;
+  const items = [];
+
   filtered.forEach(c=>{
+    // Month divider (only for date-sorted views)
+    if (filterSort !== 'weight-desc') {
+      const d = new Date(c.catch_date||c.created_at);
+      const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+      if (monthKey !== lastMonthKey) {
+        lastMonthKey = monthKey;
+        items.push(`<div style="display:flex;align-items:center;gap:0.5rem;margin:0.75rem 0 0.4rem;opacity:0.5">
+          <div style="flex:1;height:1px;background:var(--ink-light)"></div>
+          <div style="font-size:0.7rem;font-weight:500;color:var(--ink-light);white-space:nowrap">${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}</div>
+          <div style="flex:1;height:1px;background:var(--ink-light)"></div>
+        </div>`);
+      }
+    }
     const trip=allTrips.find(t=>t.id===c.trip_id);
     const meta=[];
     if(c.weight)meta.push(`${c.weight}g`);
