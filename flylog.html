@@ -2085,10 +2085,13 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 });
 
 // Credentials are hardcoded - go straight to auth
-if(document.getElementById('supabase-config-form'))document.getElementById('supabase-config-form').style.display='none';
-if(document.getElementById('config-note'))document.getElementById('config-note').style.display='none';
-document.getElementById('auth-card').style.display='block';
-initSupabase();
+document.addEventListener('DOMContentLoaded', function() {
+  if(document.getElementById('supabase-config-form'))document.getElementById('supabase-config-form').style.display='none';
+  if(document.getElementById('config-note'))document.getElementById('config-note').style.display='none';
+  var authCard = document.getElementById('auth-card');
+  if(authCard) authCard.style.display='block';
+  initSupabase();
+});
 
 
 
