@@ -256,7 +256,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 
   <div id="tab-log" class="scroll-area" style="display:none;flex-direction:column">
-    <div class="section-title">Alle fangster</div>
+    <!-- Filter bar -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.85rem;flex-wrap:wrap">
+      <select id="filter-person" onchange="renderCatches()" style="flex:1;min-width:0;padding:0.4rem 0.6rem;background:var(--white);border:1px solid rgba(0,0,0,0.12);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink);outline:none;cursor:pointer">
+        <option value="">👤 Alle</option>
+        <option>Pål</option><option>Fredrik</option><option>Christoffer</option><option>Lars-Petter</option><option>Lars</option>
+      </select>
+      <select id="filter-species" onchange="renderCatches()" style="flex:1;min-width:0;padding:0.4rem 0.6rem;background:var(--white);border:1px solid rgba(0,0,0,0.12);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink);outline:none;cursor:pointer">
+        <option value="">🐟 Alle arter</option>
+        <option>Ørret</option><option>Regnbueørret</option><option>Bekkeørret</option><option>Røye</option><option>Atlantisk laks</option><option>Harr</option><option>Gjedde</option><option>Abbor</option><option>Annet</option>
+      </select>
+      <select id="filter-sort" onchange="renderCatches()" style="flex:1;min-width:0;padding:0.4rem 0.6rem;background:var(--white);border:1px solid rgba(0,0,0,0.12);border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:var(--ink);outline:none;cursor:pointer">
+        <option value="date-desc">📅 Nyeste</option>
+        <option value="date-asc">📅 Eldste</option>
+        <option value="weight-desc">⚖️ Tyngste</option>
+      </select>
+    </div>
     <div id="catches-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div></div>
   </div>
 
@@ -739,36 +754,59 @@ function renderHome(){
 function renderCatches(){
   const list=document.getElementById('catches-list');
   if(!allCatches.length){list.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div>';return}
-  const icons={'Ørret':'🟤','Regnbueørret':'🌈','Bekkeørret':'🔵','Røye':'❄️','Atlantisk laks':'🐟','Harr':'🪨','Pike':'🟢','Perch':'🟡'};
-  list.innerHTML=allCatches.map(c=>{
+
+  // Get filter values
+  const filterPerson = (document.getElementById('filter-person')||{}).value || '';
+  const filterSpecies = (document.getElementById('filter-species')||{}).value || '';
+  const filterSort = (document.getElementById('filter-sort')||{}).value || 'date-desc';
+
+  // Filter
+  let filtered = allCatches.filter(c => {
+    if (filterPerson && getNickByUserId(c.user_id) !== filterPerson) return false;
+    if (filterSpecies && c.species !== filterSpecies) return false;
+    return true;
+  });
+
+  // Sort
+  filtered = [...filtered].sort((a,b) => {
+    if (filterSort === 'weight-desc') return (parseFloat(b.weight)||0) - (parseFloat(a.weight)||0);
+    if (filterSort === 'date-asc') return new Date(a.catch_date||a.created_at) - new Date(b.catch_date||b.created_at);
+    return new Date(b.catch_date||b.created_at) - new Date(a.catch_date||a.created_at);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><p>Ingen fangster matcher filteret.</p></div>';
+    return;
+  }
+
+  filtered.forEach(c=>{
     const trip=allTrips.find(t=>t.id===c.trip_id);
-    const icon=icons[c.species]||'🎣';
     const meta=[];
     if(c.weight)meta.push(`${c.weight}g`);
     if(c.fly)meta.push(`🪰 ${c.fly}${c.fly_size?' '+c.fly_size:''}`);
-    const photoUrl=c.photo_path?getPhotoUrl(c.photo_path):null;
-    const wHtml='';
     const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
-    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
+    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
       ${(()=>{
         const extraPhotos = (window.catchPhotoCache||{})[c.id]||[];
         const thumbPath = extraPhotos.length > 0 ? extraPhotos[0] : c.photo_path;
         const thumbUrl = thumbPath ? getPhotoUrl(thumbPath) : null;
-        return thumbUrl ? `<img src="${thumbUrl}" alt="catch" loading="lazy" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0">` : '<div style="width:48px;height:48px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🎣</div>';
+        return thumbUrl ? `<img src="${thumbUrl}" alt="catch" loading="lazy" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">` : '<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎣</div>';
       })()}
       <div style="flex:1;min-width:0">
-        <div style="font-weight:500;font-size:0.9rem;color:var(--ink)">${c.species||'Ukjent'}${c.weight?' · '+c.weight+'g':''}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
-          <span style="background:var(--moss-pale);color:var(--moss);font-size:0.7rem;font-weight:500;padding:2px 8px;border-radius:20px">${nick}</span>
-          ${catchDateDisplay?`<span style="font-size:0.72rem;color:var(--ink-light)">${catchDateDisplay}${catchTimeDisplay?' · '+catchTimeDisplay:''}</span>`:''}
-          ${trip?`<span style="font-size:0.72rem;color:var(--river-mid)">📍 ${trip.name}</span>`:''}
+        <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}${c.weight?' · '+c.weight+'g':''}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">
+          <span style="background:var(--moss-pale);color:var(--moss);font-size:0.68rem;font-weight:500;padding:1px 7px;border-radius:20px">${nick}</span>
+          ${catchDateDisplay?`<span style="font-size:0.68rem;color:var(--ink-light)">${catchDateDisplay}${catchTimeDisplay?' · '+catchTimeDisplay:''}</span>`:''}
+          ${trip?`<span style="font-size:0.68rem;color:var(--river-mid)">📍 ${trip.name}</span>`:''}
         </div>
       </div>
-    </div>`
-  }).join('');
+    </div>`);
+  });
+  list.innerHTML = items.join('');
 }
+
 
 function populateTripSelect(){
   const sel=document.getElementById('catch-trip');
