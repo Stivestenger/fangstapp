@@ -623,7 +623,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <script>
 let sb=null,currentUser=null,authMode='signin',catchOutcome='gjenutsatt';
 let allTrips=[],allCatches=[],selectedPhotoFile=null,weatherData=null;
-let allProfiles={};
+let allProfiles=[];
 let catchPinMap=null,catchPinMarker=null;
 let catchLat=null,catchLon=null;
 let mapInstance=null,mapMarkers=[];
@@ -727,8 +727,8 @@ async function loadData(){
     window.catchPhotoCache[p.catch_id].push(p.photo_path);
   });
   allTrips=tr.data||[];allCatches=ca.data||[];
-  allProfiles={};
-  (prof.data||[]).forEach(p=>{ allProfiles[p.id]=p; });
+  allProfiles=[];
+  allProfiles=(prof.data||[]);
   const myIds=new Set(allTrips.map(t=>t.id));
   (allTr.data||[]).forEach(t=>{ if(!myIds.has(t.id)) allTrips.push(t); });
   allTrips.sort((a,b)=>new Date(b.date)-new Date(a.date));
@@ -1205,7 +1205,7 @@ async function loadAllMemberCatches(year) {
   const end = year+'-12-31';
   // Reload profiles to make sure we have latest
   const profRes = await sb.from('profiles').select('*');
-  (profRes.data||[]).forEach(p=>{ allProfiles[p.id]=p; });
+  (profRes.data||[]).forEach(p=>{ 
   const {data, error} = await sb.from('catches').select('*').gte('created_at', start).lte('created_at', end+'T23:59:59');
   if (error || !data) return allCatches.filter(c=>new Date(c.created_at).getFullYear()===year).map(c=>({...c,member:getNickByUserId(c.user_id)}));
   return data.map(c=>({...c, member: getNickByUserId(c.user_id)}));
