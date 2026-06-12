@@ -667,8 +667,10 @@ async function checkSession(){
 
 function toggleAuthMode(){
   authMode=authMode==='signin'?'signup':'signin';
-  document.getElementById('auth-btn').textContent=authMode==='signin'?'Logg inn':'Opprett konto';
-  document.getElementById('auth-toggle').textContent=authMode==='signin'?'Ingen konto? Registrer deg':'Already have an account? Logg inn';
+  const isSignup = authMode==='signup';
+  document.getElementById('auth-btn').textContent=isSignup?'Opprett konto':'Logg inn';
+  document.getElementById('auth-toggle').textContent=isSignup?'Har du konto? Logg inn':'Ingen konto? Registrer deg';
+  document.getElementById('auth-nickname').style.display=isSignup?'block':'none';
   document.getElementById('auth-error').style.display='none';
 }
 
@@ -684,7 +686,7 @@ async function doAuth(){
   if(error){errEl.textContent=error.message;errEl.style.display='block';return}
   if(authMode==='signup'&&!data.session){
     errEl.style.background='rgba(100,200,100,0.15)';errEl.style.color='#b3ffb3';
-    errEl.textContent='Account created! Sjekk e-posten din for en bekreftelseslenke, logg deretter inn.';
+    errEl.textContent='Konto opprettet! Sjekk e-posten din for en bekreftelseslenke, logg deretter inn.';
     errEl.style.display='block';return;
   }
   currentUser=data.user||data.session?.user;enterApp();
