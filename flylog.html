@@ -1022,10 +1022,8 @@ function switchTabByName(tab) {
     if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
     setTimeout(() => {
       if(!mapInstance) initMap();
-      else {
-        mapInstance.invalidateSize();
-        mapInstance.setView([62.0, 10.0], 5);
-      }
+      else mapInstance.invalidateSize();
+      mapInstance.setView([62.0, 10.0], 5);
       setTimeout(() => renderMapPinsOnly(), 200);
     }, 100);
   }
@@ -1043,10 +1041,8 @@ function switchTab(tab,el){
     if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
     setTimeout(() => {
       if(!mapInstance) initMap();
-      else {
-        mapInstance.invalidateSize();
-        mapInstance.setView([62.0, 10.0], 5);
-      }
+      else mapInstance.invalidateSize();
+      mapInstance.setView([62.0, 10.0], 5);
       setTimeout(() => renderMapPinsOnly(), 200);
     }, 100);
   }
@@ -1383,9 +1379,6 @@ function renderMapPinsOnly() {
     mapMarkers.push(marker);
     bounds.push([c.weather_lat, c.weather_lon]);
   });
-  if (bounds.length) {
-    mapInstance.fitBounds(bounds, {padding: [40, 40], maxZoom: 13});
-  }
   // Invalidate size after tab becomes visible
   setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
 }
@@ -1429,9 +1422,6 @@ function renderMap() {
     mapMarkers.push(marker);
     bounds.push([c.weather_lat, c.weather_lon]);
   });
-  if (bounds.length) {
-    mapInstance.fitBounds(bounds, {padding: [40, 40], maxZoom: 13});
-  }
   // Invalidate size after tab becomes visible
   setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
 }
