@@ -188,18 +188,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <script>
 // Run before page renders - hide config if already set
 (function(){
-  var url = localStorage.getItem('sb_url');
-  var key = localStorage.getItem('sb_key');
-  if(url && key) {
-    document.addEventListener('DOMContentLoaded', function(){
-      var cfg = document.getElementById('supabase-config-form');
-      var note = document.getElementById('config-note');
-      var card = document.getElementById('auth-card');
-      if(cfg) cfg.style.display='none';
-      if(note) note.style.display='none';
-      if(card) card.style.display='block';
-    });
-  }
+  // Credentials are hardcoded - hide config form on load
+  document.addEventListener('DOMContentLoaded', function(){
+    var cfg = document.getElementById('supabase-config-form');
+    var note = document.getElementById('config-note');
+    if(cfg) cfg.style.display='none';
+    if(note) note.style.display='none';
+  });
 })();
 </script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -632,7 +627,12 @@ let catchPinMap=null,catchPinMarker=null;
 let catchLat=null,catchLon=null;
 let mapInstance=null,mapMarkers=[];
 
-function loadConfig(){return{url:localStorage.getItem('sb_url')||'',key:localStorage.getItem('sb_key')||''}}
+function loadConfig(){
+  return {
+    url: 'https://ozwdhvnfqepqgcbahnwl.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96d2Rodm5mcWVwcWdjYmFobndsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODI0MTUsImV4cCI6MjA5NjA1ODQxNX0.CRbNGULth7sShg3Hm0_KWeBZgr89dr_o2ng05vMbzFw'
+  };
+}
 
 function saveConfig(){
   const url=document.getElementById('cfg-url').value.trim();
@@ -649,7 +649,7 @@ function initSupabase(){
   s.onload=()=>{
     sb=window.supabase.createClient(url,key);
     handlePasswordRecovery();
-    document.getElementById('supabase-config-form').style.display='none';
+    if(document.getElementById('supabase-config-form'))document.getElementById('supabase-config-form').style.display='none';
     document.getElementById('config-note').style.display='none';
     document.getElementById('auth-card').style.display='block';
     checkSession();
@@ -1137,7 +1137,7 @@ async function signOut(){
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-auth').classList.add('active');
   // Go straight to login, skip config
-  document.getElementById('supabase-config-form').style.display='none';
+  if(document.getElementById('supabase-config-form'))document.getElementById('supabase-config-form').style.display='none';
   document.getElementById('config-note').style.display='none';
   document.getElementById('auth-card').style.display='block';
   document.getElementById('auth-error').style.display='none';
@@ -2087,7 +2087,7 @@ const cfg=loadConfig();
 if(cfg.url&&cfg.key){
   document.getElementById('cfg-url').value=cfg.url;
   document.getElementById('cfg-key').value=cfg.key;
-  document.getElementById('supabase-config-form').style.display='none';
+  if(document.getElementById('supabase-config-form'))document.getElementById('supabase-config-form').style.display='none';
   document.getElementById('config-note').style.display='none';
   document.getElementById('auth-card').style.display='block';
   initSupabase();
