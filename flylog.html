@@ -2043,6 +2043,21 @@ function updateProfileStats() {
   el('stat-my-points', points + 'p');
 }
 
+
+async function saveNickname() {
+  const input = document.getElementById('nickname-input');
+  const nick = input.value.trim();
+  if (!nick) { showToast('Skriv inn et kallenavn'); return; }
+  if (!sb || !currentUser) return;
+  const {error} = await sb.auth.updateUser({data: {nickname: nick}});
+  if (error) { showToast('Feil: ' + error.message); return; }
+  currentUser.user_metadata = {...(currentUser.user_metadata||{}), nickname: nick};
+  document.getElementById('profile-name').textContent = nick;
+  await upsertProfile();
+  closeModal('modal-nickname');
+  showToast('Kallenavn oppdatert! ✓');
+}
+
 let toastTimer=null;
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
