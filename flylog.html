@@ -243,12 +243,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   <div id="tab-home" class="scroll-area" style="display:flex;flex-direction:column">
 
     <div class="stats-row">
-      <div class="stat-card"><div class="val" id="stat-trips">0</div><div class="lbl">Turer</div></div>
-      <div class="stat-card"><div class="val" id="stat-fish">0</div><div class="lbl">Fisk fanget</div></div>
-    </div>
-    <div class="section-title">Årets ledertavle</div>
-    <div id="home-leaderboard" style="margin-bottom:0.75rem">
-      <div style="font-size:0.82rem;color:var(--ink-light)">Laster kåring...</div>
+      <div class="stat-card"><div class="lbl">Turer</div></div>
+      <div class="stat-card"><div class="lbl">Fisk fanget</div></div>
     </div>
     <div id="home-biggest-fish" style="margin-bottom:1.5rem"></div>
     <div class="section-title">Siste turer</div>
@@ -722,9 +718,6 @@ function getPhotoUrl(path){
 }
 
 function renderHome(){
-  document.getElementById('stat-trips').textContent=allTrips.length;
-  document.getElementById('stat-fish').textContent=allCatches.length;
-
   const list=document.getElementById('trips-list');
   if(!allTrips.length){list.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Ingen turer ennå. Trykk + for å logge den første!</p></div>';return}
   list.innerHTML=allTrips.map(t=>{
@@ -1193,8 +1186,7 @@ async function renderTrophy() {
   if (flyEl) flyEl.innerHTML = topFlies.length ? topFlies.map((f,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.85rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem"><div style="font-size:1.3rem;min-width:28px;text-align:center">${['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</div><div style="flex:1"><div style="font-weight:500;font-size:0.9rem;color:var(--ink)">${f.name}${f.size?' <span style=\'color:var(--river-mid);font-size:0.8rem\'>' +f.size+'</span>':''}</div><div style="font-size:0.72rem;color:var(--ink-light);margin-top:2px">${f.count} fangst${f.count!==1?'er':''}</div></div><div style="font-family:'DM Mono',monospace;font-size:0.9rem;font-weight:500;color:var(--moss-mid)">${f.count} 🎣</div></div>`).join('') : '<div style="font-size:0.82rem;color:var(--ink-light);padding:0.5rem 0">Ingen fluedata ennå</div>';
 
   // Home leaderboard compact
-  const homeBoard = document.getElementById('home-leaderboard');
-  if (homeBoard) homeBoard.innerHTML = board.slice(0,3).map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:0.7rem 1rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem"><div style="font-size:1.2rem">${medals[i]}</div>${getAvatarHtml(null,m.name,28)}<div style="flex:1;font-size:0.88rem;font-weight:500;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light)">${m.count} fisk</div></div>`).join('') || '<div style="font-size:0.82rem;color:var(--ink-light)">Ingen fangster ennå</div>';
+
 
   // Biggest fish card
   const biggestEl = document.getElementById('home-biggest-fish');
@@ -1916,6 +1908,23 @@ async function deleteCatchPhotoAt(index) {
   showToast('Bilde slettet');
   await loadData();
   openCatchDetailWithPhotos(currentCarouselCatchId);
+}
+
+
+function updateProfileStats() {
+  if (!currentUser) return;
+  const year = new Date().getFullYear();
+  const myCatches = allCatches.filter(c => c.user_id === currentUser.id && new Date(c.created_at).getFullYear() === year);
+  const myNick = getMyNickname();
+  const myTrips = allTrips.filter(t => t.members && t.members.includes(myNick) || t.user_id === currentUser.id);
+  const biggest = myCatches.reduce((max, c) => parseFloat(c.weight||0) > parseFloat(max.weight||0) ? c : max, {weight:0});
+  const points = myCatches.reduce((sum, c) => sum + getPoints(c.weight), 0);
+
+  const el = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+  el('stat-my-trips', myTrips.length);
+  el('stat-my-fish', myCatches.length);
+  el('stat-my-biggest', biggest.weight ? biggest.weight + 'g' : '—');
+  el('stat-my-points', points + 'p');
 }
 
 let toastTimer=null;
