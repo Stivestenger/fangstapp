@@ -234,7 +234,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <div class="screen" id="screen-app" style="display:flex;flex-direction:column;height:100vh;padding-top:57px;padding-bottom:57px">
   <div class="topbar">
     <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:36px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
-    <div style="flex:1;text-align:center;font-family:'IM Fell English',serif;font-size:1.2rem;color:var(--ink);font-style:italic;text-transform:uppercase">· Fangstoversikt ·</div>
+    <div style="flex:1;text-align:center;font-family:'IM Fell English',serif;font-size:1.2rem;color:var(--ink);font-style:italic;text-transform:uppercase">· Fangstlogg ·</div>
     <button class="icon-btn" onclick="onTopPlus()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     </button>
@@ -280,18 +280,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
         <div style="padding:0.6rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06)">
           <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);font-weight:500">Statistikk 2026</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr">
-          <div style="padding:0.85rem 1rem;border-right:1px solid rgba(0,0,0,0.06);border-bottom:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">🎣 Turer</div>
-            <div id="stat-my-trips" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+          <div style="padding:0.85rem 0.7rem;border-right:1px solid rgba(0,0,0,0.06)">
+            <div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-light);margin-bottom:3px">🎣 Turer</div>
+            <div id="stat-my-trips" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
-          <div style="padding:0.85rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">🐟 Fisk fanget</div>
-            <div id="stat-my-fish" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
+          <div style="padding:0.85rem 0.7rem;border-right:1px solid rgba(0,0,0,0.06)">
+            <div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-light);margin-bottom:3px">🐟 Fisk</div>
+            <div id="stat-my-fish" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
-          <div style="padding:0.85rem 1rem;grid-column:1/-1">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">⚖️ Største fisk</div>
-            <div id="stat-my-biggest" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
+          <div style="padding:0.85rem 0.7rem">
+            <div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-light);margin-bottom:3px">⚖️ Største</div>
+            <div id="stat-my-biggest" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
         </div>
       </div>
@@ -310,7 +310,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   <!-- TROPHY TAB -->
   <div id="tab-trophy" class="scroll-area" style="display:none;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
-      <div style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink)">Kåring <span id="trophy-year" style="color:var(--river-mid)"></span></div>
+      <div style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink)">Status <span id="trophy-year" style="color:var(--river-mid)"></span></div>
       <select id="trophy-year-select" onchange="renderTrophy()" style="padding:0.4rem 0.6rem;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--ink);outline:none"></select>
     </div>
     <div id="full-leaderboard"></div>
@@ -751,7 +751,7 @@ function renderCatches(){
     const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
-    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:14px;margin-bottom:0.6rem;cursor:pointer;box-shadow:0 2px 8px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
+    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
       ${(()=>{
         const extraPhotos = (window.catchPhotoCache||{})[c.id]||[];
         const thumbPath = extraPhotos.length > 0 ? extraPhotos[0] : c.photo_path;
