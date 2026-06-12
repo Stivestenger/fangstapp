@@ -225,7 +225,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div id="auth-error" class="auth-error" style="display:none"></div>
       <input type="email" id="auth-email" placeholder="E-postadresse" autocomplete="email">
       <input type="password" id="auth-password" placeholder="Passord (min. 6 tegn)">
-      <input type="text" id="auth-nickname" placeholder="Kallenavn (f.eks. Stiv, Laksen...)" autocomplete="off" style="display:none">
+      <select id="auth-member-name" style="display:none;width:100%;padding:0.75rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;margin-bottom:0.5rem">
+        <option value="">Velg ditt navn...</option>
+        <option>Pål</option>
+        <option>Fredrik</option>
+        <option>Christoffer</option>
+        <option>Lars-Petter</option>
+        <option>Lars</option>
+      </select>
+      <input type="text" id="auth-nickname" placeholder="Kallenavn (valgfritt, f.eks. BAY, Laksen...)" autocomplete="off" style="display:none">
       <button class="btn-primary" id="auth-btn" onclick="doAuth()">Logg inn</button>
       <div class="auth-switch"><span id="auth-toggle" onclick="toggleAuthMode()">Ingen konto? Registrer deg</span></div>
     </div>
@@ -670,6 +678,7 @@ function toggleAuthMode(){
   const isSignup = authMode==='signup';
   document.getElementById('auth-btn').textContent=isSignup?'Opprett konto':'Logg inn';
   document.getElementById('auth-toggle').textContent=isSignup?'Har du konto? Logg inn':'Ingen konto? Registrer deg';
+  document.getElementById('auth-member-name').style.display=isSignup?'block':'none';
   document.getElementById('auth-nickname').style.display=isSignup?'block':'none';
   document.getElementById('auth-error').style.display='none';
 }
@@ -680,14 +689,27 @@ async function doAuth(){
   const password=document.getElementById('auth-password').value;
   const errEl=document.getElementById('auth-error');errEl.style.display='none';
   const nickname=document.getElementById('auth-nickname').value.trim();
+  const memberName=document.getElementById('auth-member-name')?.value||'';
+  if(authMode==='signup'){
+    if(!memberName){errEl.textContent='Velg ditt navn fra listen.';errEl.style.display='block';return;}
+  }
   const {data,error}=authMode==='signin'
     ?await sb.auth.signInWithPassword({email,password})
-    :await sb.auth.signUp({email,password,options:{data:{nickname:nickname||email.split('@')[0]}}});
+    :await sb.auth.signUp({email,password,options:{data:{
+        nickname: nickname||memberName,
+        member_name: memberName
+      }}});
   if(error){errEl.textContent=error.message;errEl.style.display='block';return}
   if(authMode==='signup'&&!data.session){
     errEl.style.background='rgba(100,200,100,0.15)';errEl.style.color='#b3ffb3';
-    errEl.textContent='Konto opprettet! Sjekk e-posten din for en bekreftelseslenke, logg deretter inn.';
-    errEl.style.display='block';return;
+    errEl.textContent='Konto opprettet! Logg inn med e-post og passord.';
+    errEl.style.display='block';
+    authMode='signin';
+    document.getElementById('auth-btn').textContent='Logg inn';
+    document.getElementById('auth-toggle').textContent='Ingen konto? Registrer deg';
+    document.getElementById('auth-member-name').style.display='none';
+    document.getElementById('auth-nickname').style.display='none';
+    return;
   }
   currentUser=data.user||data.session?.user;enterApp();
 }
@@ -1198,6 +1220,13 @@ function getNickByUserId(userId) {
   return 'Ukjent';
 }
 
+function getMemberNameByUserId(userId) {
+  if (!userId) return null;
+  if (userId === currentUser?.id) return currentUser?.user_metadata?.member_name || null;
+  const profile = (allProfiles||[]).find(p => p.id === userId);
+  return profile?.member_name || profile?.nickname || null;
+}
+
 function getMyNickname() {
   return currentUser?.user_metadata?.nickname || currentUser?.email?.split('@')[0] || 'Ukjent';
 }
@@ -1241,12 +1270,13 @@ async function renderTrophy() {
     return d.getFullYear() === year;
   });
 
-  // Build score per member
+  // Build score per member using member_name for matching
   const board = [];
   catches.forEach(c => {
     const nick = getNickByUserId(c.user_id);
+    const memberName = getMemberNameByUserId(c.user_id) || nick;
     let entry = board.find(b => b.userId === c.user_id);
-    if (!entry) { entry = {name:nick, userId:c.user_id, count:0, score:0, heaviest:0}; board.push(entry); }
+    if (!entry) { entry = {name:nick, memberName:memberName, userId:c.user_id, count:0, score:0, heaviest:0}; board.push(entry); }
     entry.count++;
     const w = parseFloat(c.weight)||0;
     if (w > entry.heaviest) entry.heaviest = w;
@@ -1256,13 +1286,14 @@ async function renderTrophy() {
     else entry.score += 10;
   });
 
-  // Full board with all 5 members as placeholders
+  // Full board: match by member_name, fall back to nickname
   const allMemberNames = ['Pål','Fredrik','Christoffer','Lars-Petter','Lars'];
   const boardMap = {};
-  board.forEach(m => boardMap[m.name] = m);
+  board.forEach(m => { boardMap[m.memberName] = m; });
   const fullBoard = allMemberNames.map(name => {
     if (boardMap[name]) return boardMap[name];
-    const profile = (allProfiles||[]).find(p => p.nickname === name);
+    // Find profile by member_name or nickname
+    const profile = (allProfiles||[]).find(p => p.member_name === name || p.nickname === name);
     return {name, userId: profile?.id || null, count:0, heaviest:0, score:0};
   });
   fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
@@ -2062,9 +2093,11 @@ async function upsertProfile() {
   if (!sb || !currentUser) return;
   const nick = currentUser.user_metadata?.nickname || currentUser.email?.split('@')[0] || 'Fisker';
   const avatarUrl = currentUser.user_metadata?.avatar_url || null;
+  const memberName = currentUser.user_metadata?.member_name || null;
   await sb.from('profiles').upsert({
     id: currentUser.id,
     nickname: nick,
+    member_name: memberName,
     avatar_url: avatarUrl,
     updated_at: new Date().toISOString()
   }, { onConflict: 'id' });
