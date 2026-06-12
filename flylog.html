@@ -300,36 +300,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   <!-- TROPHY TAB -->
   <div id="tab-trophy" class="scroll-area" style="display:none;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
-      <div>
-        <div class="section-title" style="margin-bottom:0.2rem">Kåring</div>
-        <div style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink)">Årets fisker <span id="trophy-year" style="color:var(--river-mid)"></span></div>
-      </div>
+      <div style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink)">Kåring <span id="trophy-year" style="color:var(--river-mid)"></span></div>
       <select id="trophy-year-select" onchange="renderTrophy()" style="padding:0.4rem 0.6rem;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--ink);outline:none"></select>
     </div>
-
-    <!-- Overall leader -->
-    <div id="trophy-leader" style="background:linear-gradient(135deg,#2c5f7a,#2d4a1e);border-radius:16px;padding:1.4rem 1.4rem 1.2rem;margin-bottom:1.2rem;color:#fff;text-align:center">
-      <div style="font-size:2rem;margin-bottom:0.3rem">👑</div>
-      <div style="font-family:'Lora',serif;font-size:1.3rem;font-weight:600" id="leader-name">—</div>
-      <div style="font-size:0.78rem;opacity:0.75;margin-top:0.2rem" id="leader-sub">Laster...</div>
-    </div>
-
-    <!-- Category rankings -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.2rem">
-      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:1rem">
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:0.6rem">🎣 Flest fisk</div>
-        <div id="rank-count" style="font-size:0.82rem;color:var(--ink)">Laster...</div>
-      </div>
-      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:1rem">
-        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);margin-bottom:0.6rem">⚖️ Tyngste fisk</div>
-        <div id="rank-weight" style="font-size:0.82rem;color:var(--ink)">Laster...</div>
-      </div>
-    </div>
-
-    <!-- Full leaderboard -->
-    <div class="section-title">Samlet rangering</div>
     <div id="full-leaderboard"></div>
     <div id="top-flies" style="display:none"></div>
+    <div id="rank-count" style="display:none"></div>
+    <div id="rank-weight" style="display:none"></div>
+    <div id="leader-name" style="display:none"></div>
+    <div id="leader-sub" style="display:none"></div>
   </div>
 
   <div class="bottom-nav">
@@ -1186,8 +1165,24 @@ async function renderTrophy() {
   const rankWeightEl = document.getElementById('rank-weight');
   if (rankWeightEl) rankWeightEl.innerHTML = byWeight.slice(0,3).map((m,i)=>`<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:0.8rem"><span>${medals[i]} ${m.name}</span><span style="font-weight:500;color:var(--river)">${m.heaviest>0?m.heaviest+'g':'—'}</span></div>`).join('') || '<div style="color:var(--ink-light);font-size:0.78rem">Ingen data</div>';
 
+  // Build full board including all members as placeholders
+  const allMemberNames = ['Pål','Fredrik','Christoffer','Lars-Petter','Lars'];
+  const boardMap = {};
+  board.forEach(m => boardMap[m.name] = m);
+  const fullBoard = allMemberNames.map(name => boardMap[name] || {name, count:0, heaviest:0, score:0});
+  fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
+
+  const medalIcons = ['🥇','🥈','🥉'];
   const fullEl = document.getElementById('full-leaderboard');
-  if (fullEl) fullEl.innerHTML = board.length ? board.map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem"><div style="font-size:1.4rem;min-width:32px;text-align:center">${medals[i]||'·'}</div>${getAvatarHtml(null,m.name,36)}<div style="flex:1"><div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div><div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div></div><div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:var(--river-mid)">${m.score}p</div></div>`).join('') : '<div class="empty-state"><p>Ingen fangster registrert for dette året.</p></div>';
+  if (fullEl) fullEl.innerHTML = fullBoard.map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem">
+    <div style="font-size:1.4rem;min-width:32px;text-align:center">${medalIcons[i]||'<span style=\'font-size:0.9rem;color:var(--ink-light)\'>'+(i+1)+'.</span>'}</div>
+    ${getAvatarHtml(null,m.name,36)}
+    <div style="flex:1">
+      <div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div>
+      <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
+  </div>`).join('');
 
   // Top flies
   const flyStats = {};
