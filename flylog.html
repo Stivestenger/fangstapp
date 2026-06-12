@@ -286,10 +286,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
       <!-- Avatar + name/email side by side -->
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-        <div class="profile-avatar" id="profile-avatar" onclick="document.getElementById('avatar-input').click()" style="flex-shrink:0;width:72px;height:72px">
+        <label for="avatar-input" id="profile-avatar" style="flex-shrink:0;width:72px;height:72px;cursor:pointer;display:block">
           <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
           <div class="avatar-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-        </div>
+        </label>
         <div style="flex:1;min-width:0">
           <div class="profile-name" id="profile-name" style="margin:0;font-size:1.1rem;text-align:left">—</div>
           <div class="profile-email" id="profile-email" style="margin:0;font-size:0.78rem;text-align:left">—</div>
@@ -1240,14 +1240,19 @@ async function renderTrophy() {
   const allMemberNames = ['Pål','Fredrik','Christoffer','Lars-Petter','Lars'];
   const boardMap = {};
   board.forEach(m => boardMap[m.name] = m);
-  const fullBoard = allMemberNames.map(name => boardMap[name] || {name, count:0, heaviest:0, score:0});
+  const fullBoard = allMemberNames.map(name => {
+    if (boardMap[name]) return boardMap[name];
+    // Find userId from profiles for placeholder members
+    const profile = (allProfiles||[]).find(p => p.nickname === name);
+    return {name, userId: profile?.id || null, count:0, heaviest:0, score:0};
+  });
   fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
 
   const medalIcons = ['🥇','🥈','🥉'];
   const fullEl = document.getElementById('full-leaderboard');
   if (fullEl) fullEl.innerHTML = fullBoard.map((m,i)=>`<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem">
     <div style="font-size:1.4rem;min-width:32px;text-align:center">${medalIcons[i]||'<span style=\'font-size:0.9rem;color:var(--ink-light)\'>'+(i+1)+'.</span>'}</div>
-    ${getAvatarHtml(null,m.name,36)}
+    ${getAvatarHtml(m.userId,m.name,36)}
     <div style="flex:1">
       <div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div>
       <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
@@ -2063,6 +2068,19 @@ async function saveNickname() {
   showToast('Kallenavn oppdatert! ✓');
   await upsertProfile();
   loadData();
+}
+
+
+async function upsertProfile() {
+  if (!sb || !currentUser) return;
+  const nick = currentUser.user_metadata?.nickname || currentUser.email?.split('@')[0] || 'Fisker';
+  const avatarUrl = currentUser.user_metadata?.avatar_url || null;
+  await sb.from('profiles').upsert({
+    id: currentUser.id,
+    nickname: nick,
+    avatar_url: avatarUrl,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'id' });
 }
 
 let toastTimer=null;
