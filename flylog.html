@@ -257,7 +257,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
   <div id="tab-log" class="scroll-area" style="display:none;flex-direction:column">
     <div class="section-title">Alle fangster</div>
-    <div id="catches-list" style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:14px;overflow:hidden"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div></div>
+    <div id="catches-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div></div>
   </div>
 
   <div id="tab-profile" class="scroll-area" style="display:none;flex-direction:column">
@@ -275,27 +275,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
         </div>
       </div>
 
-      <!-- Stats with border frame -->
-      <div style="border:1px solid rgba(0,0,0,0.08);border-radius:14px;overflow:hidden;margin-bottom:1rem">
-        <div style="padding:0.5rem 0.9rem;background:var(--paper);border-bottom:1px solid rgba(0,0,0,0.06)">
-          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light)">Statistikk 2026</div>
+      <!-- Stats with trip-card style -->
+      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:14px;box-shadow:0 2px 12px rgba(18,33,30,0.07),0 1px 3px rgba(18,33,30,0.05);overflow:hidden;margin-bottom:1rem">
+        <div style="padding:0.6rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06)">
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-light);font-weight:500">Statistikk 2026</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--white)">
-          <div style="padding:0.7rem 0.9rem;border-right:1px solid rgba(0,0,0,0.06);border-bottom:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:2px">🎣 Turer</div>
-            <div id="stat-my-trips" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr">
+          <div style="padding:0.85rem 1rem;border-right:1px solid rgba(0,0,0,0.06);border-bottom:1px solid rgba(0,0,0,0.06)">
+            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">🎣 Turer</div>
+            <div id="stat-my-trips" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
-          <div style="padding:0.7rem 0.9rem;border-bottom:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:2px">🐟 Fisk fanget</div>
-            <div id="stat-my-fish" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
+          <div style="padding:0.85rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06)">
+            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">🐟 Fisk fanget</div>
+            <div id="stat-my-fish" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
-          <div style="padding:0.7rem 0.9rem;border-right:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:2px">⚖️ Største fisk</div>
-            <div id="stat-my-biggest" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">—</div>
-          </div>
-          <div style="padding:0.7rem 0.9rem">
-            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:2px">📅 År</div>
-            <div style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:600;color:var(--river-mid)">2026</div>
+          <div style="padding:0.85rem 1rem;grid-column:1/-1">
+            <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-light);margin-bottom:3px">⚖️ Største fisk</div>
+            <div id="stat-my-biggest" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--river-mid)">—</div>
           </div>
         </div>
       </div>
@@ -755,7 +751,7 @@ function renderCatches(){
     const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
-    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;border-bottom:1px solid rgba(0,0,0,0.06);background:var(--white);border-radius:0;margin-bottom:0;cursor:pointer" onclick="openCatchDetailWithPhotos('${c.id}')">
+    return`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:14px;margin-bottom:0.6rem;cursor:pointer;box-shadow:0 2px 8px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
       ${(()=>{
         const extraPhotos = (window.catchPhotoCache||{})[c.id]||[];
         const thumbPath = extraPhotos.length > 0 ? extraPhotos[0] : c.photo_path;
