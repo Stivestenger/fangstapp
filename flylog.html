@@ -28,8 +28,8 @@
 .catch-card{position:relative;overflow:hidden}
 
 
-.profile-avatar{cursor:pointer;position:relative;overflow:hidden}
-.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-avatar{cursor:pointer;position:relative;overflow:hidden;width:72px;height:72px;border-radius:50%;background:var(--river-mid);flex-shrink:0}
+.profile-avatar .avatar-img{width:72px;height:72px;object-fit:cover;border-radius:50%;position:absolute;top:0;left:0}
 .profile-avatar .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;border-radius:50%}
 .profile-avatar:hover .avatar-overlay{opacity:1}
 .profile-avatar .avatar-overlay svg{width:20px;height:20px;color:#fff}
@@ -286,7 +286,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
       <!-- Avatar + name/email side by side -->
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
-        <label for="avatar-input" id="profile-avatar" style="flex-shrink:0;width:72px;height:72px;cursor:pointer;display:block">
+        <label for="avatar-input" id="profile-avatar" style="flex-shrink:0;width:72px;height:72px;cursor:pointer;display:block;position:relative;border-radius:50%;overflow:hidden;background:var(--river-mid)">
           <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
           <div class="avatar-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
         </label>
