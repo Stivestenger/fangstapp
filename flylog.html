@@ -244,18 +244,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <!-- MAIN APP -->
 <div class="screen" id="screen-app" style="display:flex;flex-direction:column;height:100vh;padding-top:calc(env(safe-area-inset-top) + 57px);padding-bottom:57px">
   <div class="topbar">
-    <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:36px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
+    <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:44px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
     <div style="flex:1"></div>
     <div style="display:flex;align-items:center;gap:0.4rem">
-      <button class="icon-btn" onclick="openChat()" id="chat-btn" style="position:relative;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <button class="icon-btn" onclick="openChat()" id="chat-btn" style="position:relative;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         <span id="chat-badge" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:#e74c3c;border-radius:50%"></span>
       </button>
-      <button class="icon-btn" onclick="onTopPlus()" style="width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <button class="icon-btn" onclick="onTopPlus()" style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       </button>
-      <button id="profile-topbar-btn" onclick="switchTabByName('profile')" style="width:34px;height:34px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;padding:0;overflow:hidden;flex-shrink:0">
-        <div id="topbar-avatar" style="width:34px;height:34px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:0.82rem;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0"></div>
+      <button id="profile-topbar-btn" onclick="switchTabByName('profile')" style="width:40px;height:40px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;padding:0;overflow:hidden;flex-shrink:0">
+        <div id="topbar-avatar" style="width:40px;height:40px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:0.82rem;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0"></div>
       </button>
     </div>
   </div>
@@ -1445,7 +1445,7 @@ function loadAvatar() {
     const avatarUrl = currentUser?.user_metadata?.avatar_url || null;
     const nick = getMyNickname();
     if (avatarUrl) {
-      tb.innerHTML = `<img src="${avatarUrl}" style="width:28px;height:28px;object-fit:cover;border-radius:50%">`;
+      tb.innerHTML = `<img src="${avatarUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:50%">`;
     } else {
       tb.textContent = (nick[0]||'?').toUpperCase();
     }
