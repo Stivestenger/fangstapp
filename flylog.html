@@ -263,11 +263,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div id="trips-list"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Ingen turer ennå. Trykk + for å logge den første!</p></div></div>
   </div>
 
-  <div id="tab-map" style="display:none;flex-direction:column;flex:1">
-    <div id="map" style="width:100%;flex:1;min-height:300px;touch-action:none"></div>
-    <div id="map-empty" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:var(--river-pale);padding:2rem;text-align:center;z-index:2">
+  <div id="tab-map" class="scroll-area" style="display:none;flex-direction:column">
+    <div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:14px;box-shadow:0 2px 12px rgba(18,33,30,0.07),0 1px 3px rgba(18,33,30,0.05);overflow:hidden;position:relative">
+      <div id="map" style="width:100%;height:70vh;touch-action:none"></div>
+      <div id="map-empty" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:var(--river-pale);padding:2rem;text-align:center;z-index:2">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:1rem"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
       <p style="font-size:0.9rem;color:var(--ink-light)">Ingen fangster med GPS-data ennå.<br>Hent vær via GPS når du logger en fangst!</p>
+    </div>
     </div>
   </div>
 
@@ -1142,7 +1144,7 @@ function switchTabByName(tab) {
     const tabEl = document.getElementById('tab-map');
     tabEl.style.display = 'flex';
     const mapEl = document.getElementById('map');
-    if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
+    if (mapEl) mapEl.style.height = '70vh';
     setTimeout(() => {
       if(!mapInstance) initMap();
       else mapInstance.invalidateSize();
@@ -1161,7 +1163,7 @@ function switchTab(tab,el){
     const tabEl = document.getElementById('tab-map');
     tabEl.style.display = 'flex';
     const mapEl = document.getElementById('map');
-    if (mapEl) mapEl.style.height = (window.innerHeight - 114) + 'px';
+    if (mapEl) mapEl.style.height = '70vh';
     setTimeout(() => {
       if(!mapInstance) initMap();
       else mapInstance.invalidateSize();
@@ -1454,7 +1456,7 @@ function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
   // Set explicit pixel height before init
-  mapEl.style.height = (window.innerHeight - 114) + 'px';
+  mapEl.style.height = '70vh';
   mapInstance = L.map('map', {
     zoomControl: false,
     dragging: true,
@@ -1480,7 +1482,7 @@ function initMap() {
   // Handle resize
   window.addEventListener('resize', () => {
     if (mapInstance) {
-      mapEl.style.height = (window.innerHeight - 114) + 'px';
+      mapEl.style.height = '70vh';
       mapInstance.invalidateSize();
     }
   });
