@@ -383,7 +383,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div style="display:flex;align-items:center;gap:0.4rem;font-family:'Lora',serif;font-size:1.1rem;font-weight:600;color:var(--ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M2 12c2-4 6-6 10-6 5 0 9 4 9 6s-4 6-9 6c-4 0-8-2-10-6z"/><circle cx="8" cy="11" r="1" fill="currentColor" stroke="none"/></svg> Fiskepreik</div>
       <button onclick="closeModal('modal-chat')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);font-size:1.2rem">✕</button>
     </div>
-    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%)"></div>
+    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);touch-action:pan-y" onscroll="cancelLongPress()"></div>
     <!-- Reaction picker -->
     <div id="reaction-picker" style="display:none;position:sticky;bottom:60px;left:0;right:0;background:var(--white);border-top:1px solid rgba(0,0,0,0.08);padding:0.6rem 1rem;display:none;justify-content:space-around;flex-shrink:0;z-index:10">
       <span onclick="pickReaction('👍')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👍</span>
@@ -2194,14 +2194,25 @@ let chatReactions = {}; // msgId -> {userId: emoji}
 let activeReactionMsgId = null;
 let longPressTimer = null;
 
-function startLongPress(msgId) {
+let longPressStartY = 0;
+
+function startLongPress(msgId, event) {
+  longPressStartY = event?.touches?.[0]?.clientY || 0;
   longPressTimer = setTimeout(() => {
+    longPressTimer = null;
     showReactionPicker(msgId);
-  }, 500);
+  }, 600);
 }
 
-function cancelLongPress() {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+function cancelLongPress(event) {
+  if (!longPressTimer) return;
+  // Cancel if finger moved more than 10px (user is scrolling)
+  if (event?.touches) {
+    const dy = Math.abs((event.touches[0]?.clientY || 0) - longPressStartY);
+    if (dy < 10) return;
+  }
+  clearTimeout(longPressTimer);
+  longPressTimer = null;
 }
 
 function showReactionPicker(msgId) {
@@ -2330,9 +2341,9 @@ function renderChatMessages() {
     return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};margin-bottom:0.1rem">
       ${!isMe ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.7);margin-bottom:2px;margin-left:4px">${nick}</div>` : ''}
       <div oncontextmenu="event.preventDefault();showReactionPicker('${m.id}')" 
-           ontouchstart="startLongPress('${m.id}')" 
+           ontouchstart="startLongPress('${m.id}',event)" 
            ontouchend="cancelLongPress()" 
-           ontouchmove="cancelLongPress()"
+           ontouchmove="cancelLongPress(event)"
            style="max-width:75%;background:${isMe?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.15)'};color:${isMe?'var(--river)':'#fff'};border:${isMe?'none':'1px solid rgba(255,255,255,0.2)'};border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:0.5rem 0.75rem;font-size:0.88rem;word-break:break-word;user-select:none;-webkit-user-select:none">
         ${textHtml}${photoHtml}
       </div>
