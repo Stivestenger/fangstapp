@@ -2227,12 +2227,10 @@ async function toggleReaction(msgId, emoji) {
   if (!sb || !currentUser) return;
   const existing = chatReactions[msgId]?.[currentUser.id];
   if (existing === emoji) {
-    // Remove reaction
     await sb.from('chat_reactions').delete()
       .eq('message_id', msgId).eq('user_id', currentUser.id);
     if (chatReactions[msgId]) delete chatReactions[msgId][currentUser.id];
   } else {
-    // Add/change reaction
     await sb.from('chat_reactions').upsert({
       message_id: msgId,
       user_id: currentUser.id,
@@ -2241,6 +2239,13 @@ async function toggleReaction(msgId, emoji) {
     if (!chatReactions[msgId]) chatReactions[msgId] = {};
     chatReactions[msgId][currentUser.id] = emoji;
   }
+  // Re-fetch reactions to ensure sync
+  const { data } = await sb.from('chat_reactions').select('*');
+  chatReactions = {};
+  (data||[]).forEach(r => {
+    if (!chatReactions[r.message_id]) chatReactions[r.message_id] = {};
+    chatReactions[r.message_id][r.user_id] = r.emoji;
+  });
   renderChatMessages();
 }
 
@@ -2265,7 +2270,6 @@ async function openChat() {
   document.getElementById('chat-badge').style.display = 'none';
   openModal('modal-chat');
   await loadChatMessages();
-  await loadChatReactions();
   // Mark all as seen
   localStorage.setItem('lastSeenChatTs', new Date().toISOString());
   document.getElementById('chat-badge').style.display = 'none';
@@ -2280,11 +2284,16 @@ async function openChat() {
 
 async function loadChatMessages() {
   if (!sb) return;
-  const { data } = await sb.from('chat_messages')
-    .select('*')
-    .order('created_at', { ascending: true })
-    .limit(100);
-  chatMessages = data || [];
+  const [msgRes, reactRes] = await Promise.all([
+    sb.from('chat_messages').select('*').order('created_at', { ascending: true }).limit(100),
+    sb.from('chat_reactions').select('*')
+  ]);
+  chatMessages = msgRes.data || [];
+  chatReactions = {};
+  (reactRes.data||[]).forEach(r => {
+    if (!chatReactions[r.message_id]) chatReactions[r.message_id] = {};
+    chatReactions[r.message_id][r.user_id] = r.emoji;
+  });
   renderChatMessages();
 }
 
