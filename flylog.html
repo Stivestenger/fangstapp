@@ -384,6 +384,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <button onclick="closeModal('modal-chat')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);font-size:1.2rem">✕</button>
     </div>
     <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.6rem"></div>
+    <!-- Reaction picker -->
+    <div id="reaction-picker" style="display:none;position:sticky;bottom:60px;left:0;right:0;background:var(--white);border-top:1px solid rgba(0,0,0,0.08);padding:0.6rem 1rem;display:none;justify-content:space-around;flex-shrink:0;z-index:10">
+      <span onclick="pickReaction('👍')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👍</span>
+      <span onclick="pickReaction('🎣')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">🎣</span>
+      <span onclick="pickReaction('🔥')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">🔥</span>
+      <span onclick="pickReaction('😂')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">😂</span>
+      <span onclick="pickReaction('❤️')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">❤️</span>
+      <span onclick="pickReaction('👏')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👏</span>
+      <span onclick="closeReactionPicker()" style="font-size:1.2rem;cursor:pointer;padding:0.2rem;color:var(--ink-light)">✕</span>
+    </div>
     <div style="padding:0.75rem 1rem;border-top:1px solid rgba(0,0,0,0.07);display:flex;gap:0.5rem;flex-shrink:0">
       <input type="file" id="chat-photo-input" accept="image/*" style="display:none" onchange="sendChatPhoto(event)">
       <button onclick="document.getElementById('chat-photo-input').click()" style="width:38px;height:38px;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -2178,6 +2188,73 @@ async function upsertProfile() {
   }, { onConflict: 'id' });
 }
 
+
+// ── CHAT REACTIONS ────────────────────────────────────
+let chatReactions = {}; // msgId -> {userId: emoji}
+let activeReactionMsgId = null;
+let longPressTimer = null;
+
+function startLongPress(msgId) {
+  longPressTimer = setTimeout(() => {
+    showReactionPicker(msgId);
+  }, 500);
+}
+
+function cancelLongPress() {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+}
+
+function showReactionPicker(msgId) {
+  cancelLongPress();
+  activeReactionMsgId = msgId;
+  const picker = document.getElementById('reaction-picker');
+  if (picker) picker.style.display = 'flex';
+}
+
+function closeReactionPicker() {
+  activeReactionMsgId = null;
+  const picker = document.getElementById('reaction-picker');
+  if (picker) picker.style.display = 'none';
+}
+
+async function pickReaction(emoji) {
+  if (!activeReactionMsgId || !sb) return;
+  await toggleReaction(activeReactionMsgId, emoji);
+  closeReactionPicker();
+}
+
+async function toggleReaction(msgId, emoji) {
+  if (!sb || !currentUser) return;
+  const existing = chatReactions[msgId]?.[currentUser.id];
+  if (existing === emoji) {
+    // Remove reaction
+    await sb.from('chat_reactions').delete()
+      .eq('message_id', msgId).eq('user_id', currentUser.id);
+    if (chatReactions[msgId]) delete chatReactions[msgId][currentUser.id];
+  } else {
+    // Add/change reaction
+    await sb.from('chat_reactions').upsert({
+      message_id: msgId,
+      user_id: currentUser.id,
+      emoji: emoji
+    }, {onConflict: 'message_id,user_id'});
+    if (!chatReactions[msgId]) chatReactions[msgId] = {};
+    chatReactions[msgId][currentUser.id] = emoji;
+  }
+  renderChatMessages();
+}
+
+async function loadChatReactions() {
+  if (!sb) return;
+  const { data } = await sb.from('chat_reactions').select('*');
+  chatReactions = {};
+  (data||[]).forEach(r => {
+    if (!chatReactions[r.message_id]) chatReactions[r.message_id] = {};
+    chatReactions[r.message_id][r.user_id] = r.emoji;
+  });
+}
+// ── END REACTIONS ──────────────────────────────────────
+
 // ── CHAT ──────────────────────────────────────────────
 let chatSubscription = null;
 let chatMessages = [];
@@ -2188,6 +2265,7 @@ async function openChat() {
   document.getElementById('chat-badge').style.display = 'none';
   openModal('modal-chat');
   await loadChatMessages();
+  await loadChatReactions();
   // Mark all as seen
   if (chatMessages.length > 0) {
     lastSeenChat = chatMessages[chatMessages.length-1].id;
@@ -2212,6 +2290,20 @@ async function loadChatMessages() {
   renderChatMessages();
 }
 
+function getReactionsHtml(msgId, isMe) {
+  const reactions = chatReactions[msgId] || {};
+  if (!Object.keys(reactions).length) return '';
+  // Group by emoji
+  const grouped = {};
+  Object.values(reactions).forEach(emoji => {
+    grouped[emoji] = (grouped[emoji]||0) + 1;
+  });
+  const pills = Object.entries(grouped).map(([emoji, count]) => 
+    `<span onclick="toggleReaction('${msgId}','${emoji}')" style="cursor:pointer;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:20px;padding:1px 6px;font-size:0.82rem;display:inline-flex;align-items:center;gap:2px">${emoji}${count>1?`<span style="font-size:0.7rem;color:var(--ink-light)">${count}</span>`:''}</span>`
+  ).join('');
+  return `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;justify-content:${isMe?'flex-end':'flex-start'}">${pills}</div>`;
+}
+
 function renderChatMessages() {
   const el = document.getElementById('chat-messages');
   if (!el) return;
@@ -2223,16 +2315,21 @@ function renderChatMessages() {
     const isMe = m.user_id === currentUser?.id;
     const nick = getNickByUserId(m.user_id);
     const time = new Date(m.created_at).toLocaleTimeString('nb', {hour:'2-digit',minute:'2-digit'});
-    const date = new Date(m.created_at).toLocaleDateString('nb', {day:'numeric',month:'short'});
     const photoHtml = m.photo_url
       ? `<img src="${m.photo_url}" onclick="openPhotoZoom('${m.photo_url}')" style="max-width:200px;max-height:200px;border-radius:10px;display:block;margin-top:4px;cursor:pointer">`
       : '';
     const textHtml = m.message ? `<div>${m.message}</div>` : '';
-    return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'}">
+    const reactionsHtml = getReactionsHtml(m.id, isMe);
+    return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};margin-bottom:0.1rem">
       ${!isMe ? `<div style="font-size:0.68rem;color:var(--ink-light);margin-bottom:2px;margin-left:4px">${nick}</div>` : ''}
-      <div style="max-width:75%;background:${isMe?'var(--river-mid)':'var(--white)'};color:${isMe?'#fff':'var(--ink)'};border:${isMe?'none':'1px solid rgba(0,0,0,0.08)'};border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:0.5rem 0.75rem;font-size:0.88rem;word-break:break-word">
+      <div oncontextmenu="event.preventDefault();showReactionPicker('${m.id}')" 
+           ontouchstart="startLongPress('${m.id}')" 
+           ontouchend="cancelLongPress()" 
+           ontouchmove="cancelLongPress()"
+           style="max-width:75%;background:${isMe?'var(--river-mid)':'var(--white)'};color:${isMe?'#fff':'var(--ink)'};border:${isMe?'none':'1px solid rgba(0,0,0,0.08)'};border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:0.5rem 0.75rem;font-size:0.88rem;word-break:break-word;user-select:none;-webkit-user-select:none">
         ${textHtml}${photoHtml}
       </div>
+      ${reactionsHtml}
       <div style="font-size:0.62rem;color:var(--ink-light);margin-top:2px;margin-${isMe?'right':'left'}:4px">${time}</div>
     </div>`;
   }).join('');
@@ -2329,6 +2426,22 @@ async function subscribeChatRealtime() {
           document.getElementById('chat-badge').style.display = 'block';
         }
       }
+    })
+    .subscribe();
+
+  // Also subscribe to reaction changes
+  sb.channel('chat_reactions_changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'chat_reactions'}, payload => {
+      const r = payload.new || payload.old;
+      if (!r) return;
+      if (payload.eventType === 'DELETE') {
+        if (chatReactions[r.message_id]) delete chatReactions[r.message_id][r.user_id];
+      } else {
+        if (!chatReactions[r.message_id]) chatReactions[r.message_id] = {};
+        chatReactions[r.message_id][r.user_id] = r.emoji;
+      }
+      const chatOpen = document.getElementById('modal-chat').classList.contains('open');
+      if (chatOpen) renderChatMessages();
     })
     .subscribe();
 }
