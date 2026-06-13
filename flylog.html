@@ -2354,14 +2354,25 @@ function renderChatMessages() {
       : '';
     const textHtml = m.message ? `<div>${m.message}</div>` : '';
     const reactionsHtml = getReactionsHtml(m.id, isMe);
-    return `<div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};margin-bottom:0.1rem">
-      ${!isMe ? `<div style="font-size:0.68rem;color:rgba(255,255,255,0.7);margin-bottom:2px;margin-left:4px">${nick}</div>` : ''}
-      <div data-msgid="${m.id}" oncontextmenu="event.preventDefault();showReactionPicker('${m.id}')"
-           style="max-width:75%;background:${isMe?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.15)'};color:${isMe?'var(--river)':'#fff'};border:${isMe?'none':'1px solid rgba(255,255,255,0.2)'};border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:0.5rem 0.75rem;font-size:0.88rem;word-break:break-word;user-select:none;-webkit-user-select:none">
-        ${textHtml}${photoHtml}
+    const avatarUrl = isMe 
+      ? (currentUser?.user_metadata?.avatar_url || null)
+      : ((allProfiles||[]).find(p => p.id === m.user_id)?.avatar_url || null);
+    const initial = (nick[0]||'?').toUpperCase();
+    const avatarHtml = avatarUrl
+      ? `<img src="${avatarUrl}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;align-self:flex-end">`
+      : `<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:0.72rem;font-weight:600;color:#fff;flex-shrink:0;align-self:flex-end">${initial}</div>`;
+
+    return `<div style="display:flex;flex-direction:${isMe?'row-reverse':'row'};align-items:flex-end;gap:6px;margin-bottom:0.3rem">
+      ${avatarHtml}
+      <div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};max-width:72%">
+        ${!isMe ? `<div style="font-size:0.65rem;color:rgba(255,255,255,0.65);margin-bottom:2px;margin-left:2px">${nick}</div>` : ''}
+        <div data-msgid="${m.id}" oncontextmenu="event.preventDefault();showReactionPicker('${m.id}')"
+             style="background:${isMe?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.15)'};color:${isMe?'var(--river)':'#fff'};border:${isMe?'none':'1px solid rgba(255,255,255,0.2)'};border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};padding:0.5rem 0.75rem;font-size:0.88rem;word-break:break-word;user-select:none;-webkit-user-select:none">
+          ${textHtml}${photoHtml}
+        </div>
+        ${reactionsHtml}
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.55);margin-top:2px;margin-${isMe?'right':'left'}:2px">${time}</div>
       </div>
-      ${reactionsHtml}
-      <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);margin-top:2px;margin-${isMe?'right':'left'}:4px">${time}</div>
     </div>`;
   }).join('');
   el.innerHTML = msgs;
