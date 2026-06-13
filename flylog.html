@@ -765,6 +765,7 @@ function enterApp(){
   initTrophyYearSelect();
   loadData();
   setTimeout(renderTrophy, 500);
+  setTimeout(subscribeChatRealtime, 1000);
 }
 
 async function loadData(){
@@ -2293,7 +2294,19 @@ async function sendChatPhoto(event) {
   document.getElementById('chat-photo-input').value = '';
 }
 
-function subscribeChatRealtime() {
+async function subscribeChatRealtime() {
+  if (!sb) return;
+  // Check for unread messages on startup
+  const lastSeen = localStorage.getItem('lastSeenChat');
+  const { data } = await sb.from('chat_messages')
+    .select('id')
+    .neq('user_id', currentUser.id)
+    .order('created_at', {ascending: false})
+    .limit(1);
+  if (data && data.length > 0 && data[0].id !== lastSeen) {
+    document.getElementById('chat-badge').style.display = 'block';
+  }
+
   if (chatSubscription) return;
   chatSubscription = sb.channel('chat_messages')
     .on('postgres_changes', {event:'INSERT', schema:'public', table:'chat_messages'}, payload => {
