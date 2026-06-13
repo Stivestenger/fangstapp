@@ -2184,14 +2184,15 @@ let chatMessages = [];
 let lastSeenChat = localStorage.getItem('lastSeenChat') || null;
 
 async function openChat() {
+  // Hide badge immediately
+  document.getElementById('chat-badge').style.display = 'none';
   openModal('modal-chat');
   await loadChatMessages();
-  // Mark as seen
+  // Mark all as seen
   if (chatMessages.length > 0) {
     lastSeenChat = chatMessages[chatMessages.length-1].id;
     localStorage.setItem('lastSeenChat', lastSeenChat);
   }
-  document.getElementById('chat-badge').style.display = 'none';
   // Subscribe to realtime
   subscribeChatRealtime();
   // Scroll to bottom
@@ -2322,8 +2323,11 @@ async function subscribeChatRealtime() {
           localStorage.setItem('lastSeenChat', lastSeenChat);
         }
       } else if (payload.new.user_id !== currentUser?.id) {
-        // Show badge
-        document.getElementById('chat-badge').style.display = 'block';
+        // Only show badge if chat modal is NOT open
+        const chatOpen = document.getElementById('modal-chat').classList.contains('open');
+        if (!chatOpen) {
+          document.getElementById('chat-badge').style.display = 'block';
+        }
       }
     })
     .subscribe();
