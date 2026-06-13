@@ -1310,26 +1310,28 @@ async function renderTrophy() {
     const podiumLabels = ['🥈','🥇','🥉'];
     const podiumPos = [1,0,2]; // which fullBoard index each podium slot is
 
-    const podiumHTML = `<div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:1.2rem;padding:0 0.5rem">
-      ${podiumOrder.map((m,i) => m ? `
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
-          ${getAvatarHtml(m.userId, m.name, i===1?52:40)}
-          <div style="font-weight:600;font-size:${i===1?'0.88rem':'0.78rem'};color:var(--ink);text-align:center;line-height:1.2">${m.name}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:${i===1?'0.95rem':'0.82rem'};font-weight:700;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
-          <div style="width:100%;background:${podiumColors[i]};border-radius:8px 8px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;font-size:${i===1?'1.6rem':'1.3rem'}">${podiumLabels[i]}</div>
-        </div>` : `<div style="flex:1"></div>`
-      ).join('')}
+    const podiumHTML = `<div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:14px;box-shadow:0 2px 12px rgba(18,33,30,0.07),0 1px 3px rgba(18,33,30,0.05);padding:1.2rem 1rem 0;margin-bottom:0.6rem;overflow:hidden">
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px">
+        ${podiumOrder.map((m,i) => m ? `
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
+            ${getAvatarHtml(m.userId, m.name, i===1?52:40)}
+            <div style="font-weight:600;font-size:${i===1?'0.88rem':'0.78rem'};color:var(--ink);text-align:center;line-height:1.2">${m.name}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:${i===1?'0.92rem':'0.8rem'};font-weight:700;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
+            <div style="width:100%;background:${podiumColors[i]};border-radius:6px 6px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;font-size:${i===1?'1.5rem':'1.2rem'}">${podiumLabels[i]}</div>
+          </div>` : `<div style="flex:1"></div>`
+        ).join('')}
+      </div>
     </div>`;
 
     const restHTML = rest.map((m,i) => `
-      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.4rem;display:flex;align-items:center;gap:0.75rem">
-        <div style="font-size:0.85rem;font-weight:500;color:var(--ink-light);min-width:20px;text-align:center">${i+4}.</div>
-        ${getAvatarHtml(m.userId,m.name,32)}
+      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:0.85rem 1.1rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.85rem;box-shadow:0 2px 12px rgba(18,33,30,0.07),0 1px 3px rgba(18,33,30,0.05)">
+        <div style="font-size:0.82rem;font-weight:500;color:var(--ink-light);min-width:20px;text-align:center">${i+4}.</div>
+        ${getAvatarHtml(m.userId,m.name,34)}
         <div style="flex:1">
-          <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${m.name}</div>
-          <div style="font-size:0.7rem;color:var(--ink-light);margin-top:1px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
+          <div style="font-weight:500;font-size:0.9rem;color:var(--ink)">${m.name}</div>
+          <div style="font-size:0.72rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
         </div>
-        <div style="font-family:'DM Mono',monospace;font-size:0.9rem;font-weight:500;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.92rem;font-weight:500;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
       </div>`).join('');
 
     fullEl.innerHTML = podiumHTML + restHTML;
