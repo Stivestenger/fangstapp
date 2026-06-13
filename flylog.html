@@ -2413,7 +2413,7 @@ async function sendChatPhoto(event) {
   try {
     const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
     const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
-    const path = `chat/${currentUser.id}/${Date.now()}.${safeExt}`;
+    const path = `${currentUser.id}/chat-${Date.now()}.${safeExt}`;
     const arrayBuf = await file.arrayBuffer();
     const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
     if (error) { showToast('Feil: ' + error.message); return; }
