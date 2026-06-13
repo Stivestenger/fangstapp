@@ -2384,31 +2384,33 @@ async function sendChatMessage() {
 async function sendChatPhoto(event) {
   const file = event.target.files[0];
   if (!file || !sb) return;
-  showToast('Laster opp bilde...');
-  const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
-  const path = `chat/${currentUser.id}/${Date.now()}.${ext}`;
-  const arrayBuf = await file.arrayBuffer();
-  const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
-  if (error) { showToast('Feil: ' + error.message); return; }
-  const { data } = sb.storage.from('catch-photos').getPublicUrl(path);
-  const newMsg = {
-    id: 'temp-' + Date.now(),
-    user_id: currentUser.id,
-    photo_url: data.publicUrl,
-    created_at: new Date().toISOString()
-  };
-  chatMessages.push(newMsg);
-  renderChatMessages();
-  const { data: inserted } = await sb.from('chat_messages').insert({
-    user_id: currentUser.id,
-    photo_url: data.publicUrl,
-    created_at: new Date().toISOString()
-  }).select().single();
-  if (inserted) {
-    const idx = chatMessages.findIndex(m => m.id === newMsg.id);
-    if (idx >= 0) chatMessages[idx] = inserted;
-  }
   document.getElementById('chat-photo-input').value = '';
+  showToast('Laster opp bilde...');
+  try {
+    const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
+    const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
+    const path = `chat/${currentUser.id}/${Date.now()}.${safeExt}`;
+    const arrayBuf = await file.arrayBuffer();
+    const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
+    if (error) { showToast('Feil: ' + error.message); return; }
+    const { data } = sb.storage.from('catch-photos').getPublicUrl(path);
+    const photoUrl = data.publicUrl;
+    const newMsg = { id: 'temp-' + Date.now(), user_id: currentUser.id, photo_url: photoUrl, created_at: new Date().toISOString() };
+    chatMessages.push(newMsg);
+    renderChatMessages();
+    const { data: inserted } = await sb.from('chat_messages').insert({
+      user_id: currentUser.id, photo_url: photoUrl, created_at: new Date().toISOString()
+    }).select().single();
+    if (inserted) {
+      const i = chatMessages.findIndex(m => m.id === newMsg.id);
+      if (i >= 0) chatMessages[i] = inserted;
+      renderChatMessages();
+    }
+    showToast('Bilde sendt! 📸');
+  } catch(e) {
+    showToast('Feil ved opplasting');
+    console.error(e);
+  }
 }
 
 async function subscribeChatRealtime() {
