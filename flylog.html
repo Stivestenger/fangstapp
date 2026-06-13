@@ -377,7 +377,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 </div>
 
 <!-- MODAL: CHAT -->
-<div class="modal-overlay" id="modal-chat" style="z-index:9000;align-items:flex-end;padding:0">
+<div class="modal-overlay" id="modal-chat" style="z-index:9000">
   <div class="modal" style="height:85vh;display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:85vh">
     <!-- Header -->
     <div style="padding:1rem 1.2rem 0.8rem;background:var(--river);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
@@ -388,7 +388,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <button onclick="closeModal('modal-chat')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);font-size:1.2rem">✕</button>
     </div>
     <!-- Messages - scrollable -->
-    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%)"></div>
+    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%)"></div>
     <!-- Reaction picker -->
     <div id="reaction-picker" style="display:none;background:var(--river-mid);border-top:1px solid rgba(255,255,255,0.1);padding:0.6rem 1rem;justify-content:space-around;flex-shrink:0;z-index:10">
       <span onclick="pickReaction('👍')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👍</span>
