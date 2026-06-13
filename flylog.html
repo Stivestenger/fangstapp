@@ -383,7 +383,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div style="font-family:'Lora',serif;font-size:1.1rem;font-weight:600;color:var(--ink)">Gruppechat 💬</div>
       <button onclick="closeModal('modal-chat')" style="background:none;border:none;cursor:pointer;color:var(--ink-light);font-size:1.2rem">✕</button>
     </div>
-    <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.6rem"></div>
+    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem;display:flex;flex-direction:column;gap:0.6rem"></div>
     <!-- Reaction picker -->
     <div id="reaction-picker" style="display:none;position:sticky;bottom:60px;left:0;right:0;background:var(--white);border-top:1px solid rgba(0,0,0,0.08);padding:0.6rem 1rem;display:none;justify-content:space-around;flex-shrink:0;z-index:10">
       <span onclick="pickReaction('👍')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👍</span>
@@ -2267,10 +2267,8 @@ async function openChat() {
   await loadChatMessages();
   await loadChatReactions();
   // Mark all as seen
-  if (chatMessages.length > 0) {
-    lastSeenChat = chatMessages[chatMessages.length-1].id;
-    localStorage.setItem('lastSeenChat', lastSeenChat);
-  }
+  localStorage.setItem('lastSeenChatTs', new Date().toISOString());
+  document.getElementById('chat-badge').style.display = 'none';
   // Subscribe to realtime
   subscribeChatRealtime();
   // Scroll to bottom
@@ -2395,13 +2393,13 @@ async function sendChatPhoto(event) {
 async function subscribeChatRealtime() {
   if (!sb) return;
   // Check for unread messages on startup
-  const lastSeen = localStorage.getItem('lastSeenChat');
+  const lastSeenTs = localStorage.getItem('lastSeenChatTs') || '1970-01-01';
   const { data } = await sb.from('chat_messages')
     .select('id')
     .neq('user_id', currentUser.id)
-    .order('created_at', {ascending: false})
+    .gt('created_at', lastSeenTs)
     .limit(1);
-  if (data && data.length > 0 && data[0].id !== lastSeen) {
+  if (data && data.length > 0) {
     document.getElementById('chat-badge').style.display = 'block';
   }
 
@@ -2424,6 +2422,9 @@ async function subscribeChatRealtime() {
         const chatOpen = document.getElementById('modal-chat').classList.contains('open');
         if (!chatOpen) {
           document.getElementById('chat-badge').style.display = 'block';
+        } else {
+          // Update last seen timestamp if chat is open
+          localStorage.setItem('lastSeenChatTs', new Date().toISOString());
         }
       }
     })
