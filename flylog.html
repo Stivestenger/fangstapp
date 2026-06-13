@@ -339,9 +339,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <select id="trophy-year-select" onchange="renderTrophy()" style="padding:0.4rem 0.6rem;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--ink);outline:none"></select>
     </div>
     <div id="full-leaderboard"></div>
-    <div style="margin-top:1rem;font-size:0.72rem;color:var(--ink-light);text-align:center;line-height:1.6">
-      under 200g = 1p &nbsp;·&nbsp; 200–500g = 3p &nbsp;·&nbsp; 500g–1kg = 6p &nbsp;·&nbsp; over 1kg = 10p
-    </div>
     <div id="top-flies" style="display:none"></div>
     <div id="rank-count" style="display:none"></div>
     <div id="rank-weight" style="display:none"></div>
@@ -1301,17 +1298,42 @@ async function renderTrophy() {
   });
   fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
 
-  const medalIcons = ['🥇','🥈','🥉'];
   const fullEl = document.getElementById('full-leaderboard');
-  if (fullEl) fullEl.innerHTML = fullBoard.map((m,i) => `<div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.9rem">
-    <div style="font-size:1.4rem;min-width:32px;text-align:center">${medalIcons[i]||'<span style=\'font-size:0.9rem;color:var(--ink-light)\'>'+(i+1)+'.</span>'}</div>
-    ${getAvatarHtml(m.userId,m.name,36)}
-    <div style="flex:1">
-      <div style="font-weight:500;font-size:0.95rem;color:var(--ink)">${m.name}</div>
-      <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
-    </div>
-    <div style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
-  </div>`).join('');
+  if (fullEl) {
+    const top3 = fullBoard.slice(0,3);
+    const rest = fullBoard.slice(3);
+
+    // Podium order: 2nd, 1st, 3rd
+    const podiumOrder = [top3[1], top3[0], top3[2]];
+    const podiumHeights = ['60px','80px','50px'];
+    const podiumColors = ['#9b9b9b','#d4a843','#a0714f'];
+    const podiumLabels = ['🥈','🥇','🥉'];
+    const podiumPos = [1,0,2]; // which fullBoard index each podium slot is
+
+    const podiumHTML = `<div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:1.2rem;padding:0 0.5rem">
+      ${podiumOrder.map((m,i) => m ? `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+          ${getAvatarHtml(m.userId, m.name, i===1?52:40)}
+          <div style="font-weight:600;font-size:${i===1?'0.88rem':'0.78rem'};color:var(--ink);text-align:center;line-height:1.2">${m.name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:${i===1?'0.95rem':'0.82rem'};font-weight:700;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
+          <div style="width:100%;background:${podiumColors[i]};border-radius:8px 8px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;font-size:${i===1?'1.6rem':'1.3rem'}">${podiumLabels[i]}</div>
+        </div>` : `<div style="flex:1"></div>`
+      ).join('')}
+    </div>`;
+
+    const restHTML = rest.map((m,i) => `
+      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.4rem;display:flex;align-items:center;gap:0.75rem">
+        <div style="font-size:0.85rem;font-weight:500;color:var(--ink-light);min-width:20px;text-align:center">${i+4}.</div>
+        ${getAvatarHtml(m.userId,m.name,32)}
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${m.name}</div>
+          <div style="font-size:0.7rem;color:var(--ink-light);margin-top:1px">${m.count} fisk · tyngste: ${m.heaviest>0?m.heaviest+'g':'—'}</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.9rem;font-weight:500;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
+      </div>`).join('');
+
+    fullEl.innerHTML = podiumHTML + restHTML;
+  }
 
 
   } catch(e) {
