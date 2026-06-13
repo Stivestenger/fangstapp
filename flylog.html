@@ -2223,11 +2223,24 @@ async function sendChatMessage() {
   const msg = input.value.trim();
   if (!msg || !sb) return;
   input.value = '';
-  await sb.from('chat_messages').insert({
+  const newMsg = {
+    id: 'temp-' + Date.now(),
     user_id: currentUser.id,
     message: msg,
     created_at: new Date().toISOString()
-  });
+  };
+  chatMessages.push(newMsg);
+  renderChatMessages();
+  const { data, error } = await sb.from('chat_messages').insert({
+    user_id: currentUser.id,
+    message: msg,
+    created_at: new Date().toISOString()
+  }).select().single();
+  // Replace temp with real
+  if (data) {
+    const idx = chatMessages.findIndex(m => m.id === newMsg.id);
+    if (idx >= 0) chatMessages[idx] = data;
+  }
 }
 
 async function sendChatPhoto(event) {
@@ -2240,11 +2253,23 @@ async function sendChatPhoto(event) {
   const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
   if (error) { showToast('Feil: ' + error.message); return; }
   const { data } = sb.storage.from('catch-photos').getPublicUrl(path);
-  await sb.from('chat_messages').insert({
+  const newMsg = {
+    id: 'temp-' + Date.now(),
     user_id: currentUser.id,
     photo_url: data.publicUrl,
     created_at: new Date().toISOString()
-  });
+  };
+  chatMessages.push(newMsg);
+  renderChatMessages();
+  const { data: inserted } = await sb.from('chat_messages').insert({
+    user_id: currentUser.id,
+    photo_url: data.publicUrl,
+    created_at: new Date().toISOString()
+  }).select().single();
+  if (inserted) {
+    const idx = chatMessages.findIndex(m => m.id === newMsg.id);
+    if (idx >= 0) chatMessages[idx] = inserted;
+  }
   document.getElementById('chat-photo-input').value = '';
 }
 
@@ -2252,6 +2277,9 @@ function subscribeChatRealtime() {
   if (chatSubscription) return;
   chatSubscription = sb.channel('chat_messages')
     .on('postgres_changes', {event:'INSERT', schema:'public', table:'chat_messages'}, payload => {
+      // Skip if already added locally (own messages)
+      const exists = chatMessages.find(m => m.id === payload.new.id);
+      if (exists) return;
       chatMessages.push(payload.new);
       const chatOpen = document.getElementById('modal-chat').classList.contains('open');
       if (chatOpen) {
