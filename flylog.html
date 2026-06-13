@@ -68,10 +68,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .icon-btn svg{width:22px;height:22px}
 
 /* NAV */
-.bottom-nav{display:flex;justify-content:space-around;background:var(--white);border-top:none;padding:8px;position:fixed;bottom:calc(0.75rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:500;width:calc(100% - 6rem);max-width:272px;border-radius:999px;gap:4px;box-shadow:0 4px 20px rgba(18,33,30,0.15),0 1px 4px rgba(18,33,30,0.08);gap:0.25rem}
-.nav-item{flex:0 0 44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-light);transition:background 0.15s;border-radius:50%;width:44px;height:44px;}
-.nav-item svg{width:22px;height:22px}
-.nav-item.active{color:var(--river-mid);background:var(--river-pale);border-radius:50%;width:44px;height:44px;padding:0;}
+.bottom-nav{display:flex;justify-content:space-around;background:var(--white);border-top:none;padding:10px;position:fixed;bottom:calc(0.75rem + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:500;width:calc(100% - 6rem);max-width:272px;border-radius:999px;gap:4px;box-shadow:0 4px 20px rgba(18,33,30,0.15),0 1px 4px rgba(18,33,30,0.08);gap:0.25rem}
+.nav-item{flex:0 0 48px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-light);border-radius:50%;width:48px;height:48px;}
+.nav-item svg{width:24px;height:24px}
+.nav-item.active{color:var(--river-mid);background:var(--river-pale);border-radius:50%;width:48px;height:48px;padding:0;}
 .active-profile #topbar-avatar{outline:1px solid rgba(0,0,0,0.2);}
 
 /* SCROLL */
@@ -244,7 +244,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 <!-- MAIN APP -->
 <div class="screen" id="screen-app" style="display:flex;flex-direction:column;height:100vh;padding-top:calc(env(safe-area-inset-top) + 57px);padding-bottom:57px">
   <div class="topbar">
-    <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:44px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
+    <div class="logo" onclick="switchTabByName('home')" style="cursor:pointer"><img id="topbar-logo" src="" style="height:52px;width:auto;display:block" alt="Stive Stenger Fiskeklubb"></div>
     <div style="flex:1"></div>
     <div style="display:flex;align-items:center;gap:0.4rem">
       <button class="icon-btn" onclick="openChat()" id="chat-btn" style="position:relative;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
