@@ -1106,6 +1106,13 @@ function openTripDetail(tripId){
     <div style="background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;padding:0.25rem 1rem">
       ${catchList}
     </div>` : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
+
+  const tripPhotos = (window.tripPhotoCache||{})[t.id] || [];
+  const tripPhotoHtml = tripPhotos.map(p => {
+    const url = getPhotoUrl(p);
+    return '<div style="position:relative;display:inline-block"><img src="'+url+'" onclick="openPhotoZoom(\''+url+'\')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer;display:block" loading="lazy">'+(isParticipant?'<div class="trip-photo-delete-btn" data-path="'+p+'" data-trip="'+t.id+'" onclick="deleteTripPhoto(\''+p+'\',\''+t.id+'\',event)" style="display:none;position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:#e24b4a;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;cursor:pointer">✕</div>':'')+'</div>';
+  }).join('');
+
   document.getElementById('trip-detail-content').innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
       <button class="back-btn" style="margin-bottom:0" onclick="closeModal('modal-trip-detail')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Tilbake</button>
