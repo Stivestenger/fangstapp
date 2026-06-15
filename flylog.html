@@ -415,6 +415,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   </div>
 </div>
 
+<!-- MODAL: PLUS MENU -->
+<div class="modal-overlay" id="modal-plus-menu" style="align-items:flex-end;padding:0.75rem">
+  <div style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;margin-bottom:calc(env(safe-area-inset-bottom) + 0.5rem)">
+    <div style="background:var(--white);border-radius:16px;overflow:hidden">
+      <div onclick="closeModal('modal-plus-menu');setTimeout(()=>openTripModal(),200)" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.06)">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--river);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="18" height="18"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:500;font-size:0.92rem;color:var(--ink)">Logg tur</div>
+          <div style="font-size:0.72rem;color:var(--ink-light);margin-top:1px">Opprett en ny fisketur</div>
+        </div>
+      </div>
+      <div onclick="closeModal('modal-plus-menu');setTimeout(()=>openCatchModal(),200)" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--moss);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="18" height="18"><path d="M2 12c2-4 6-6 10-6 5 0 9 4 9 6s-4 6-9 6c-4 0-8-2-10-6z"/><circle cx="8" cy="11" r="1" fill="#fff" stroke="none"/></svg>
+        </div>
+        <div>
+          <div style="font-weight:500;font-size:0.92rem;color:var(--ink)">Logg fangst</div>
+          <div style="font-size:0.72rem;color:var(--ink-light);margin-top:1px">Registrer en fisk</div>
+        </div>
+      </div>
+    </div>
+    <div onclick="closeModal('modal-plus-menu')" style="background:var(--white);border-radius:16px;padding:14px 16px;text-align:center;cursor:pointer;font-size:0.92rem;font-weight:500;color:var(--ink-light)">Avbryt</div>
+  </div>
+</div>
+
 <!-- MODAL: POINTS -->
 <div class="modal-overlay" id="modal-points">
   <div class="modal" style="max-width:320px">
@@ -1736,27 +1763,27 @@ async function fetchWeatherForLocation(lat, lon) {
 
 
 function onTopPlus() {
-  const active = document.querySelector('.nav-item.active');
-  if (active && active.textContent.trim().startsWith('Logg')) {
-    const now = new Date();
-    const dateEl = document.getElementById('catch-date');
-    const timeEl = document.getElementById('catch-time');
-    if(dateEl) dateEl.value = now.toISOString().split('T')[0];
-    if(timeEl) timeEl.value = now.toTimeString().slice(0,5);
-    openModal('modal-catch');
-  }
-  else {
-    // Clear trip form before opening
-    ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('trip-date').value='';
-    document.getElementById('trip-date-end').value='';
-    openModal('modal-trip');
-    // Auto-check current user after modal opens
-    const myNick = getMyNickname();
-    document.querySelectorAll('.trip-member-cb').forEach(cb => {
-      cb.checked = cb.value === myNick;
-    });
-  }
+  openModal('modal-plus-menu');
+}
+
+function openTripModal() {
+  ['trip-name','trip-location'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trip-date').value='';
+  document.getElementById('trip-date-end').value='';
+  openModal('modal-trip');
+  const myNick = getMyNickname();
+  document.querySelectorAll('.trip-member-cb').forEach(cb => {
+    cb.checked = cb.value === myNick;
+  });
+}
+
+function openCatchModal() {
+  const now = new Date();
+  const dateEl = document.getElementById('catch-date');
+  const timeEl = document.getElementById('catch-time');
+  if(dateEl) dateEl.value = now.toISOString().split('T')[0];
+  if(timeEl) timeEl.value = now.toTimeString().slice(0,5);
+  openModal('modal-catch');
 }
 
 
