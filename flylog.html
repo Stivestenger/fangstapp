@@ -905,7 +905,9 @@ function renderCatches(){
     const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
-    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05)" onclick="openCatchDetailWithPhotos('${c.id}')">
+    const catchLabel = getCatchLabel(c.weight);
+    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05);position:relative" onclick="openCatchDetailWithPhotos('${c.id}')">
+      ${catchLabel ? `<div style="position:absolute;top:-9px;right:10px;background:var(--ink);color:#fff;font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.05em;white-space:nowrap">${catchLabel}</div>` : ''}
       ${(()=>{
         const extraPhotos = (window.catchPhotoCache||{})[c.id]||[];
         const thumbPath = extraPhotos.length > 0 ? extraPhotos[0] : c.photo_path;
@@ -2277,6 +2279,30 @@ async function loadChatReactions() {
   });
 }
 // ── END REACTIONS ──────────────────────────────────────
+
+
+// ── CATCH LABELS ──────────────────────────────────────
+function getCatchLabel(weight) {
+  const w = parseFloat(weight) || 0;
+  if (w <= 0) return null;
+  const labels = {
+    tiny:   ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"],
+    small:  ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"],
+    medium: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"],
+    large:  ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"],
+    huge:   ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"]
+  };
+  let pool;
+  if (w < 150) pool = labels.tiny;
+  else if (w < 300) pool = labels.small;
+  else if (w < 750) pool = labels.medium;
+  else if (w < 1000) pool = labels.large;
+  else pool = labels.huge;
+  // Use catch weight as seed for consistent random (same fish = same label)
+  const idx = Math.floor((w * 7) % pool.length);
+  return pool[idx];
+}
+// ── END CATCH LABELS ───────────────────────────────────
 
 // ── CHAT ──────────────────────────────────────────────
 let chatSubscription = null;
