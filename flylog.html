@@ -1511,11 +1511,19 @@ async function uploadAvatar(e) {
 
 function getAvatarHtml(userId, nickname, size) {
   const s = size || 36;
-  const avatarUrl = (currentUser?.id === userId) ? currentUser?.user_metadata?.avatar_url : null;
-  if (avatarUrl) {
-    return `<img src="${avatarUrl}" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${nickname}">`;
+  let avatarUrl = null;
+  if (currentUser?.id === userId) {
+    avatarUrl = currentUser?.user_metadata?.avatar_url || null;
   }
-  return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:${Math.round(s*0.4)}px;font-weight:600;color:#fff;flex-shrink:0">${(nickname[0]||'?').toUpperCase()}</div>`;
+  if (!avatarUrl && userId) {
+    const profile = (allProfiles||[]).find(p => p.id === userId);
+    avatarUrl = profile?.avatar_url || null;
+  }
+  if (avatarUrl) {
+    return `<img src="${avatarUrl}" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${nickname}" onerror="this.style.display='none'">`;
+  }
+  const initial = (nickname||'?')[0].toUpperCase();
+  return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:var(--river-mid);display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:${Math.round(s*0.4)}px;font-weight:600;color:#fff;flex-shrink:0">${initial}</div>`;
 }
 
 
