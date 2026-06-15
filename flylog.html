@@ -1344,6 +1344,124 @@ function buildLeaderboard(catches) {
   return Object.values(stats).sort((a,b)=>b.score-a.score);
 }
 
+
+function renderHome(){
+  // Biggest fish card
+  const biggestEl = document.getElementById('home-biggest-fish');
+  if (biggestEl) {
+    const allWithWeight = (allCatches||[]).filter(c=>parseFloat(c.weight)>0).sort((a,b)=>parseFloat(b.weight)-parseFloat(a.weight));
+    const biggest = allWithWeight[0];
+    if (biggest) {
+      const catcher = getNickByUserId(biggest.user_id);
+      biggestEl.innerHTML = `<div style="background:linear-gradient(135deg,var(--sand-pale),#f0e0b0);border:1px solid var(--sand);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem">
+        <div style="font-size:1.5rem">🏅</div>
+        <div style="flex:1">
+          <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#6b4c1e;margin-bottom:2px">Årets største fisk</div>
+          <div style="font-weight:600;font-size:0.92rem;color:var(--ink)">${catcher} — ${biggest.species||'Ukjent'}</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:700;color:#6b4c1e">${biggest.weight}g</div>
+      </div>`;
+    } else {
+      biggestEl.innerHTML = '';
+    }
+  }
+
+  const list = document.getElementById('trips-list');
+  if (!list) return;
+  if (!allTrips.length) {
+    list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Ingen turer ennå. Trykk + for å logge den første!</p></div>';
+    return;
+  }
+  const myNick = getMyNickname();
+  list.innerHTML = allTrips.map(t => {
+    const tripCatches = allCatches.filter(c => c.trip_id === t.id);
+    const isParticipant = !t.members || t.members.length === 0 || t.members.includes(myNick) || t.user_id === currentUser.id;
+    const memberPills = (t.members||[]).map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.68rem;font-weight:500;padding:2px 8px;border-radius:20px">${m}</span>`).join('');
+    return `<div class="trip-card" onclick="openTripDetail('${t.id}')">
+      <div class="trip-header"><div class="trip-name">${t.name}</div><div class="trip-date">${formatDate(t.date)}${t.date_end && t.date_end !== t.date ? ' → ' + formatDate(t.date_end) : ''}</div></div>
+      ${t.location ? `<div class="trip-location">📍 ${t.location}</div>` : ''}
+      ${memberPills ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${memberPills}</div>` : ''}
+      <div class="trip-footer"><span>🎣 ${tripCatches.length} fangst${tripCatches.length !== 1 ? 'er' : ''}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderCatches(){
+  const list = document.getElementById('catches-list');
+  if (!list) return;
+  if (!allCatches.length) {
+    list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg><p>Ingen fangster logget ennå.</p></div>';
+    return;
+  }
+
+  const filterPerson = (document.getElementById('filter-person')||{}).value || '';
+  const filterSpecies = (document.getElementById('filter-species')||{}).value || '';
+  const filterSort = (document.getElementById('filter-sort')||{}).value || 'date-desc';
+
+  let filtered = allCatches.filter(c => {
+    if (filterPerson && getNickByUserId(c.user_id) !== filterPerson) return false;
+    if (filterSpecies && c.species !== filterSpecies) return false;
+    return true;
+  });
+
+  filtered = [...filtered].sort((a,b) => {
+    if (filterSort === 'weight-desc') return (parseFloat(b.weight)||0) - (parseFloat(a.weight)||0);
+    if (filterSort === 'date-asc') return new Date(a.catch_date||a.created_at) - new Date(b.catch_date||b.created_at);
+    return new Date(b.catch_date||b.created_at) - new Date(a.catch_date||a.created_at);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><p>Ingen fangster matcher filteret.</p></div>';
+    return;
+  }
+
+  const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+  let lastMonthKey = null;
+  const items = [];
+
+  filtered.forEach(c => {
+    if (filterSort !== 'weight-desc') {
+      const d = new Date(c.catch_date||c.created_at);
+      const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+      if (monthKey !== lastMonthKey) {
+        lastMonthKey = monthKey;
+        items.push(`<div style="display:flex;align-items:center;gap:0.5rem;margin:0.75rem 0 0.4rem;opacity:0.5">
+          <div style="flex:1;height:1px;background:var(--ink-light)"></div>
+          <div style="font-size:0.7rem;font-weight:500;color:var(--ink-light);white-space:nowrap">${months[d.getMonth()]} '${String(d.getFullYear()).slice(2)}</div>
+          <div style="flex:1;height:1px;background:var(--ink-light)"></div>
+        </div>`);
+      }
+    }
+
+    const trip = allTrips.find(t => t.id === c.trip_id);
+    const catchDateDisplay = c.catch_date ? formatDate(c.catch_date.split('T')[0]) : (c.created_at ? formatDate(c.created_at.split('T')[0]) : '');
+    const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
+    const nick = getNickByUserId(c.user_id);
+    const catchLabel = getCatchLabel(c);
+
+    const extraPhotos = (window.catchPhotoCache||{})[c.id]||[];
+    const thumbPath = extraPhotos.length > 0 ? extraPhotos[0] : c.photo_path;
+    const thumbUrl = thumbPath ? getPhotoUrl(thumbPath) : null;
+    const thumbHtml = thumbUrl
+      ? `<img src="${thumbUrl}" alt="catch" loading="lazy" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0">`
+      : '<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎣</div>';
+
+    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05);position:relative;overflow:hidden" onclick="openCatchDetailWithPhotos('${c.id}')">
+      ${catchLabel ? `<div style="position:absolute;top:0;right:0;background:${catchLabel.color};color:#fff;font-size:0.58rem;font-weight:700;padding:3px 9px;border-radius:0 12px 0 8px;letter-spacing:0.05em;white-space:nowrap">${catchLabel.text}</div>` : ''}
+      ${thumbHtml}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}${c.weight?' · '+c.weight+'g':''}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">
+          <span style="background:var(--moss-pale);color:var(--moss);font-size:0.68rem;font-weight:500;padding:1px 7px;border-radius:20px">${nick}</span>
+          ${catchDateDisplay ? `<span style="font-size:0.68rem;color:var(--ink-light)">${catchDateDisplay}${catchTimeDisplay?' · '+catchTimeDisplay:''}</span>` : ''}
+          ${trip ? `<span style="font-size:0.68rem;color:var(--river-mid)">📍 ${trip.name}</span>` : ''}
+        </div>
+      </div>
+    </div>`);
+  });
+  list.innerHTML = items.join('');
+}
+
 async function renderTrophy() {
   try {
   const sel = document.getElementById('trophy-year-select');
