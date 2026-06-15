@@ -1196,20 +1196,25 @@ function openTripDetail(tripId){
 
   // Individual catches list
   const catchList = catches.length ? catches.map(c => {
-    const photoUrl = c.photo_path ? getPhotoUrl(c.photo_path) : null;
+    const extraPhotos = (window.catchPhotoCache||{})[c.id] || [];
+    const allPhotos = c.photo_path ? [c.photo_path, ...extraPhotos] : extraPhotos;
     const nick = getNickByUserId(c.user_id);
     const meta = [];
     if(c.weight) meta.push(c.weight+'g');
     if(c.fly) meta.push('🪰 '+c.fly+(c.fly_size?' '+c.fly_size:''));
-    return`<div style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0;border-bottom:1px solid rgba(0,0,0,0.05)">
-      ${photoUrl
-        ? `<img src="${photoUrl}" onclick="openPhotoZoom('${photoUrl}')" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer" loading="lazy">`
-        : `<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎣</div>`}
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}</div>
-        <div style="font-size:0.73rem;color:var(--ink-light);margin-top:1px">${meta.join(' · ')||'—'}</div>
+    const photoGallery = allPhotos.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${allPhotos.map(p=>{const u=getPhotoUrl(p);return `<img src="${u}" onclick="openPhotoZoom('${u}')" style="width:64px;height:64px;object-fit:cover;border-radius:8px;cursor:pointer" loading="lazy">`;}).join('')}</div>`
+      : '';
+    return`<div style="padding:0.65rem 0;border-bottom:1px solid rgba(0,0,0,0.05)">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <div style="width:36px;height:36px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem">🎣</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}</div>
+          <div style="font-size:0.73rem;color:var(--ink-light);margin-top:1px">${meta.join(' · ')||'—'}</div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--moss-mid);font-weight:500;flex-shrink:0">${nick}</div>
       </div>
-      <div style="font-size:0.75rem;color:var(--moss-mid);font-weight:500;flex-shrink:0">${nick}</div>
+      ${photoGallery}
     </div>`
   }).join('') : `<p style="font-size:0.85rem;color:var(--ink-light);padding:0.5rem 0">Ingen fangster på denne turen ennå.</p>`;
 
