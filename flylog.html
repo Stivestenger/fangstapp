@@ -1398,17 +1398,19 @@ function renderHome(){
   list.innerHTML = allTrips.map(t => {
     const tc = allCatches.filter(c => c.trip_id === t.id);
     const members = t.members||[];
-    const memberPills = members.map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.72rem;font-weight:500;padding:2px 10px;border-radius:20px">${m}</span>`).join('');
+    const memberPills = members.map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.68rem;font-weight:500;padding:1px 8px;border-radius:20px">${m}</span>`).join('');
     const species = tc.reduce((a,c)=>{a[c.species]=(a[c.species]||0)+1;return a;},{});
     const fishPills = Object.entries(species).map(([s,n])=>`<span style="background:var(--moss-pale);color:var(--moss);font-size:0.72rem;font-weight:500;padding:2px 10px;border-radius:20px">${s} ×${n}</span>`).join('');
     return `<div class="trip-card" onclick="openTripDetail('${t.id}')">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.4rem">
-        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:600;color:var(--ink)">${t.name}</div>
-        <div style="font-size:0.75rem;color:var(--ink-light);flex-shrink:0;margin-left:8px">${formatMonthYear(t.date)}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-family:'Lora',serif;font-size:0.95rem;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px">
+          <div style="font-size:0.78rem;color:var(--ink-light)">🎣 ${tc.length}</div>
+          <div style="font-size:0.72rem;color:var(--ink-light)">${formatMonthYear(t.date)}</div>
+        </div>
       </div>
-      ${t.location?`<div style="font-size:0.78rem;color:var(--ink-light);margin-bottom:0.5rem">📍 ${t.location}</div>`:''}
-      ${memberPills?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.5rem">${memberPills}</div>`:''}
-      ${fishPills?`<div style="display:flex;flex-wrap:wrap;gap:4px">${fishPills}</div>`:tc.length===0?`<div style="font-size:0.75rem;color:var(--ink-light)">Ingen fangster ennå</div>`:''}
+      ${t.location?`<div style="font-size:0.72rem;color:var(--ink-light);margin-top:3px">📍 ${t.location}</div>`:''}
+      ${memberPills?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${memberPills}</div>`:''}
     </div>`;
   }).join('');
 }
