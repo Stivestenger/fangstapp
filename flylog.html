@@ -920,7 +920,7 @@ function renderCatches(){
           <span style="background:var(--moss-pale);color:var(--moss);font-size:0.68rem;font-weight:500;padding:1px 7px;border-radius:20px">${nick}</span>
           ${catchDateDisplay?`<span style="font-size:0.68rem;color:var(--ink-light)">${catchDateDisplay}${catchTimeDisplay?' · '+catchTimeDisplay:''}</span>`:''}
           ${trip?`<span style="font-size:0.68rem;color:var(--river-mid)">📍 ${trip.name}</span>`:''}
-          ${catchLabel?`<span style="font-size:0.62rem;font-weight:700;color:#fff;background:var(--ink);padding:1px 7px;border-radius:20px;letter-spacing:0.04em">${catchLabel}</span>`:''}
+          ${catchLabel?`<span style="font-size:0.62rem;font-weight:700;color:#fff;background:${catchLabel.color};padding:1px 7px;border-radius:20px;letter-spacing:0.04em">${catchLabel.text}</span>`:''}
         </div>
       </div>
     </div>`);
@@ -2286,22 +2286,21 @@ async function loadChatReactions() {
 function getCatchLabel(weight) {
   const w = parseFloat(weight) || 0;
   if (w <= 0) return null;
-  const labels = {
-    tiny:   ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"],
-    small:  ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"],
-    medium: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"],
-    large:  ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"],
-    huge:   ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"]
+  const categories = {
+    tiny:   { color: '#e24b4a', labels: ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"] },
+    small:  { color: '#BA7517', labels: ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"] },
+    medium: { color: '#3B6D11', labels: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"] },
+    large:  { color: '#534AB7', labels: ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"] },
+    huge:   { color: '#2C2C2A', labels: ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"] }
   };
-  let pool;
-  if (w < 150) pool = labels.tiny;
-  else if (w < 300) pool = labels.small;
-  else if (w < 750) pool = labels.medium;
-  else if (w < 1000) pool = labels.large;
-  else pool = labels.huge;
-  // Use catch weight as seed for consistent random (same fish = same label)
-  const idx = Math.floor((w * 7) % pool.length);
-  return pool[idx];
+  let cat;
+  if (w < 150) cat = categories.tiny;
+  else if (w < 300) cat = categories.small;
+  else if (w < 750) cat = categories.medium;
+  else if (w < 1000) cat = categories.large;
+  else cat = categories.huge;
+  const idx = Math.floor((w * 7) % cat.labels.length);
+  return { text: cat.labels[idx], color: cat.color };
 }
 // ── END CATCH LABELS ───────────────────────────────────
 
