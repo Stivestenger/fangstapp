@@ -843,15 +843,42 @@ function enterApp(){
   setTimeout(subscribeChatRealtime, 1000);
 }
 
+async function uploadTripPhoto(event, tripId) {
+  const file = event.target.files[0];
+  if (!file || !sb) return;
+  event.target.value = '';
+  showToast('Laster opp bilde...');
+  try {
+    const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
+    const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
+    const path = `${currentUser.id}/trip-${tripId}-${Date.now()}.${safeExt}`;
+    const arrayBuf = await file.arrayBuffer();
+    const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
+    if (error) { showToast('Feil: ' + error.message); return; }
+    await sb.from('trip_photos').insert({ trip_id: tripId, user_id: currentUser.id, photo_path: path });
+    showToast('Bilde lastet opp! 📸');
+    await loadData();
+    openTripDetail(tripId);
+  } catch(e) {
+    showToast('Feil ved opplasting');
+  }
+}
+
 async function loadData(){
   if(!sb||!currentUser)return;
-  const [tr,ca,allTr,prof,catchPhotos]=await Promise.all([
-    sb.from('trips').select('*').eq('user_id',currentUser.id).order('date',{ascending:false}),
+  const [tr,ca,allTr,prof,catchPhotos,tripPhotos]=await Promise.all([
+    sb.from('trips').select('*').order('date',{ascending:false}),
     sb.from('catches').select('*').order('created_at',{ascending:false}),
-    sb.from('trips').select('*').eq('is_club_trip',true).order('date',{ascending:false}),
+    sb.from('trips').select('*').order('date',{ascending:false}),
     sb.from('profiles').select('*'),
-    sb.from('catch_photos').select('*').order('created_at',{ascending:true})
+    sb.from('catch_photos').select('*').order('created_at',{ascending:true}),
+    sb.from('trip_photos').select('*').order('created_at',{ascending:true})
   ]);
+  window.tripPhotoCache = {};
+  (tripPhotos.data||[]).forEach(p => {
+    if (!window.tripPhotoCache[p.trip_id]) window.tripPhotoCache[p.trip_id] = [];
+    window.tripPhotoCache[p.trip_id].push(p.photo_path);
+  });
   // Build photo cache: catchId -> [urls]
   window.catchPhotoCache = {};
   (catchPhotos.data||[]).forEach(p => {
@@ -1190,6 +1217,22 @@ function openTripDetail(tripId){
 
 
 
+    <div class="section-title">Bilder</div>
+    <div id="trip-photos-${t.id}" style="margin-bottom:1rem">
+      ${(()=>{
+        const photos = (window.tripPhotoCache||{})[t.id] || [];
+        const photoHtml = photos.map(p => {
+          const url = getPhotoUrl(p);
+          return `<img src="${url}" onclick="openPhotoZoom('${url}')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer" loading="lazy">`;
+        }).join('');
+        return `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0.75rem">${photoHtml}</div>`;
+      })()}
+      ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="display:inline-flex;align-items:center;gap:6px;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:10px;padding:6px 14px;cursor:pointer;font-size:0.82rem;color:var(--ink-light)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Last opp bilde
+      </label>
+      <input type="file" id="trip-photo-input-${t.id}" accept="image/*" style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
+    </div>
     <div class="section-title">Fangster (${catches.length})</div>
     ${catchHtml}
     ${isParticipant ? `<button class="btn-save" style="margin-top:1rem;width:100%" onclick="openCatchForTrip('${t.id}')">+ Logg en fangst på denne turen</button>` : ''}`;
