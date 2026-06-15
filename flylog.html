@@ -888,7 +888,7 @@ async function uploadTripPhoto(event, tripId) {
 
 async function deleteTripPhoto(path, tripId) {
   if (!sb) return;
-  const confirmed = await showConfirmModal('Slett bildet?');
+  const confirmed = confirm('Slett bildet?');
   if (!confirmed) return;
   try {
     await sb.storage.from('catch-photos').remove([path]);
@@ -1268,7 +1268,7 @@ function openTripDetail(tripId){
           const canDelete = isParticipant;
           return `<div style="position:relative;display:inline-block">
             <img src="${url}" onclick="openPhotoZoom('${url}')" 
-              ${canDelete ? `oncontextmenu="event.preventDefault();deleteTripPhoto('${p}','${t.id}')" ontouchstart="startLongPress('${p}','trip','${t.id}')" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress(event)"` : ''}
+              ${canDelete ? `oncontextmenu="event.preventDefault();deleteTripPhoto('${p}','${t.id}')" ontouchstart="startLongPress('${p}','trip','${t.id}',event)" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress(event)"` : ''}
               style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer;display:block" loading="lazy">
           </div>`;
         }).join('');
