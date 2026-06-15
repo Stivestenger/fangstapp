@@ -1479,7 +1479,7 @@ function renderCatches(){
       : '<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎣</div>';
 
     items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05);position:relative;overflow:hidden" onclick="openCatchDetailWithPhotos('${c.id}')">
-      ${catchLabel ? `<div style="position:absolute;top:0;right:0;background:${catchLabel.color};color:#fff;font-size:0.58rem;font-weight:700;padding:3px 9px;border-radius:0 12px 0 8px;letter-spacing:0.05em;white-space:nowrap">${catchLabel.text}</div>` : ''}
+      ${catchLabel ? `<div style="position:absolute;top:5px;right:7px;background:${catchLabel.color};color:#fff;font-size:0.58rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.05em;white-space:nowrap">${catchLabel.text}</div>` : ''}
       ${thumbHtml}
       <div style="flex:1;min-width:0">
         <div style="font-weight:500;font-size:0.88rem;color:var(--ink)">${c.species||'Ukjent'}${c.weight?' · '+c.weight+'g':''}</div>
