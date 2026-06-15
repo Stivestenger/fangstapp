@@ -1352,6 +1352,22 @@ function buildLeaderboard(catches) {
 }
 
 
+function getPhotoUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  const { data } = sb.storage.from('catch-photos').getPublicUrl(path);
+  return data?.publicUrl || null;
+}
+
+function populateTripSelect() {
+  const sel = document.getElementById('catch-trip');
+  if (!sel) return;
+  const myNick = getMyNickname();
+  const myTrips = allTrips.filter(t => t.user_id === currentUser.id || (t.members||[]).includes(myNick));
+  sel.innerHTML = '<option value="">Ingen tur</option>' + myTrips.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+
 function renderHome(){
   // Biggest fish card
   const biggestEl = document.getElementById('home-biggest-fish');
@@ -1360,7 +1376,7 @@ function renderHome(){
     const biggest = allWithWeight[0];
     if (biggest) {
       const catcher = getNickByUserId(biggest.user_id);
-      biggestEl.innerHTML = `<div style="background:linear-gradient(135deg,var(--sand-pale),#f0e0b0);border:1px solid var(--sand);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem">
+      biggestEl.innerHTML = `<div style="background:linear-gradient(135deg,var(--sand-pale),#f0e0b0);border:1px solid var(--sand);border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
         <div style="font-size:1.5rem">🏅</div>
         <div style="flex:1">
           <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#6b4c1e;margin-bottom:2px">Årets største fisk</div>
@@ -1381,14 +1397,19 @@ function renderHome(){
   }
   const myNick = getMyNickname();
   list.innerHTML = allTrips.map(t => {
-    const tripCatches = allCatches.filter(c => c.trip_id === t.id);
-    const isParticipant = !t.members || t.members.length === 0 || t.members.includes(myNick) || t.user_id === currentUser.id;
-    const memberPills = (t.members||[]).map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.68rem;font-weight:500;padding:2px 8px;border-radius:20px">${m}</span>`).join('');
+    const tc = allCatches.filter(c => c.trip_id === t.id);
+    const members = t.members||[];
+    const memberPills = members.map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.72rem;font-weight:500;padding:2px 10px;border-radius:20px">${m}</span>`).join('');
+    const species = tc.reduce((a,c)=>{a[c.species]=(a[c.species]||0)+1;return a;},{});
+    const fishPills = Object.entries(species).map(([s,n])=>`<span style="background:var(--moss-pale);color:var(--moss);font-size:0.72rem;font-weight:500;padding:2px 10px;border-radius:20px">${s} ×${n}</span>`).join('');
     return `<div class="trip-card" onclick="openTripDetail('${t.id}')">
-      <div class="trip-header"><div class="trip-name">${t.name}</div><div class="trip-date">${formatDate(t.date)}${t.date_end && t.date_end !== t.date ? ' → ' + formatDate(t.date_end) : ''}</div></div>
-      ${t.location ? `<div class="trip-location">📍 ${t.location}</div>` : ''}
-      ${memberPills ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${memberPills}</div>` : ''}
-      <div class="trip-footer"><span>🎣 ${tripCatches.length} fangst${tripCatches.length !== 1 ? 'er' : ''}</span></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.4rem">
+        <div style="font-family:'Lora',serif;font-size:1rem;font-weight:600;color:var(--ink)">${t.name}</div>
+        <div style="font-size:0.75rem;color:var(--ink-light);flex-shrink:0;margin-left:8px">${formatDate(t.date)}${t.date_end&&t.date_end!==t.date?' → '+formatDate(t.date_end):''}</div>
+      </div>
+      ${t.location?`<div style="font-size:0.78rem;color:var(--ink-light);margin-bottom:0.5rem">📍 ${t.location}</div>`:''}
+      ${memberPills?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.5rem">${memberPills}</div>`:''}
+      ${fishPills?`<div style="display:flex;flex-wrap:wrap;gap:4px">${fishPills}</div>`:tc.length===0?`<div style="font-size:0.75rem;color:var(--ink-light)">Ingen fangster ennå</div>`:''}
     </div>`;
   }).join('');
 }
