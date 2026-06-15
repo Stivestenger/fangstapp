@@ -920,6 +920,7 @@ function renderCatches(){
           <span style="background:var(--moss-pale);color:var(--moss);font-size:0.68rem;font-weight:500;padding:1px 7px;border-radius:20px">${nick}</span>
           ${catchDateDisplay?`<span style="font-size:0.68rem;color:var(--ink-light)">${catchDateDisplay}${catchTimeDisplay?' · '+catchTimeDisplay:''}</span>`:''}
           ${trip?`<span style="font-size:0.68rem;color:var(--river-mid)">📍 ${trip.name}</span>`:''}
+          ${catchLabel?`<span style="font-size:0.62rem;font-weight:700;color:#fff;background:var(--ink);padding:1px 7px;border-radius:20px;letter-spacing:0.04em">${catchLabel}</span>`:''}
         </div>
       </div>
     </div>`);
