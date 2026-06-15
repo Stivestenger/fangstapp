@@ -1161,7 +1161,7 @@ function openTripDetail(tripId){
         return `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0.75rem">${photoHtml}</div>`;
       })()}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        ${isParticipant && photos.length > 0 ? `<button onclick="toggleTripPhotoEdit('${t.id}')" id="trip-edit-btn-${t.id}" style="font-size:0.78rem;color:var(--river-mid);background:none;border:none;cursor:pointer;font-weight:500">Rediger</button>` : '<span></span>'}
+        ${isParticipant && ((window.tripPhotoCache||{})[t.id]||[]).length > 0 ? `<button onclick="toggleTripPhotoEdit('${t.id}')" id="trip-edit-btn-${t.id}" style="font-size:0.78rem;color:var(--river-mid);background:none;border:none;cursor:pointer;font-weight:500">Rediger</button>` : '<span></span>'}
         ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--river-mid);cursor:pointer;font-weight:500">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           Last opp bilde
