@@ -75,7 +75,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .active-profile #topbar-avatar{outline:1px solid rgba(0,0,0,0.2);}
 
 /* SCROLL */
-.scroll-area{flex:1;overflow-y:auto;padding:1rem 1.2rem 6rem;-webkit-overflow-scrolling:touch;min-height:0}
+.scroll-area{flex:1;overflow-y:auto;padding:1rem 1.2rem 9rem;-webkit-overflow-scrolling:touch;min-height:0}
 
 /* HOME */
 .greeting{margin-bottom:1.5rem}
@@ -1162,9 +1162,8 @@ function openTripDetail(tripId){
       })()}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         ${isParticipant && ((window.tripPhotoCache||{})[t.id]||[]).length > 0 ? `<button onclick="toggleTripPhotoEdit('${t.id}')" id="trip-edit-btn-${t.id}" style="font-size:0.78rem;color:var(--river-mid);background:none;border:none;cursor:pointer;font-weight:500">Rediger</button>` : '<span></span>'}
-        ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--river-mid);cursor:pointer;font-weight:500">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Last opp bilde
+        ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="width:36px;height:36px;border-radius:50%;background:var(--river-pale);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--river-mid)" stroke-width="2" width="18" height="18"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </label>
         <input type="file" id="trip-photo-input-${t.id}" accept="image/*" multiple style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
       </div>
@@ -1405,7 +1404,7 @@ function renderHome(){
     return `<div class="trip-card" onclick="openTripDetail('${t.id}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.4rem">
         <div style="font-family:'Lora',serif;font-size:1rem;font-weight:600;color:var(--ink)">${t.name}</div>
-        <div style="font-size:0.75rem;color:var(--ink-light);flex-shrink:0;margin-left:8px">${formatDate(t.date)}${t.date_end&&t.date_end!==t.date?' → '+formatDate(t.date_end):''}</div>
+        <div style="font-size:0.75rem;color:var(--ink-light);flex-shrink:0;margin-left:8px">${formatMonthYear(t.date)}</div>
       </div>
       ${t.location?`<div style="font-size:0.78rem;color:var(--ink-light);margin-bottom:0.5rem">📍 ${t.location}</div>`:''}
       ${memberPills?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:0.5rem">${memberPills}</div>`:''}
