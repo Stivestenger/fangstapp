@@ -496,13 +496,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="field-group">
       <label class="field-label">Bilde</label>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('edit-photo-camera').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Ta bilde
-        </button>
         <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('edit-photo-library').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Velg fra bibliotek
+          Last opp bildeiotek
         </button>
       </div>
       <input type="file" id="edit-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onEditPhotoSelected(event)">
@@ -580,13 +576,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="field-group">
       <label class="field-label">Bilde</label>
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('catch-photo-camera').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Ta bilde
-        </button>
         <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('catch-photo-library').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Velg fra bibliotek
+          Last opp bildeliotek
         </button>
       </div>
       <input type="file" id="catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
@@ -2233,13 +2225,8 @@ async function openCatchDetailWithPhotos(catchId) {
     </div>
 
     ${allPhotoUrls.length > 0 ? `
-    <div style="position:relative;margin-bottom:1rem">
-      <div id="catch-photo-carousel"></div>
-      ${allPhotoUrls.length > 1 ? `
-        <button onclick="swipeCarousel(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(255,255,255,0.85);border:none;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">‹</button>
-        <button onclick="swipeCarousel(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(255,255,255,0.85);border:none;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">›</button>
-        <div id="carousel-dots" style="display:flex;justify-content:center;gap:6px;margin-top:8px"></div>
-      ` : '<div id="carousel-dots"></div>'}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+      ${allPhotoUrls.map(u => `<img src="${u}" onclick="openPhotoZoom('${u}')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer" loading="lazy">`).join('')}
     </div>` : ''}
 
     ${isOwn ? `
@@ -2247,10 +2234,6 @@ async function openCatchDetailWithPhotos(catchId) {
       <input type="file" id="add-catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="addCatchPhoto(event,'${c.id}')">
       <input type="file" id="add-catch-photo-library" accept="image/*" style="display:none" onchange="addCatchPhoto(event,'${c.id}')">
       <div style="display:flex;gap:8px">
-        <button type="button" class="weather-fetch-btn" style="flex:1;font-size:0.8rem" onclick="document.getElementById('add-catch-photo-camera').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Ta bilde
-        </button>
         <button type="button" class="weather-fetch-btn" style="flex:1;font-size:0.8rem" onclick="document.getElementById('add-catch-photo-library').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           Legg til bilde
