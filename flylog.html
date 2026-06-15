@@ -843,24 +843,61 @@ function enterApp(){
   setTimeout(subscribeChatRealtime, 1000);
 }
 
+async function compressImage(file, maxPx=1920, quality=0.8) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let {width, height} = img;
+      if (width > maxPx || height > maxPx) {
+        if (width > height) { height = Math.round(height * maxPx / width); width = maxPx; }
+        else { width = Math.round(width * maxPx / height); height = maxPx; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(resolve, 'image/jpeg', quality);
+    };
+    img.src = url;
+  });
+}
+
 async function uploadTripPhoto(event, tripId) {
-  const file = event.target.files[0];
-  if (!file || !sb) return;
+  const files = Array.from(event.target.files);
+  if (!files.length || !sb) return;
   event.target.value = '';
-  showToast('Laster opp bilde...');
+  showToast(`Laster opp ${files.length} bilde${files.length>1?'r':''}...`);
   try {
-    const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
-    const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
-    const path = `${currentUser.id}/trip-${tripId}-${Date.now()}.${safeExt}`;
-    const arrayBuf = await file.arrayBuffer();
-    const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
-    if (error) { showToast('Feil: ' + error.message); return; }
-    await sb.from('trip_photos').insert({ trip_id: tripId, user_id: currentUser.id, photo_path: path });
-    showToast('Bilde lastet opp! 📸');
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      const path = `${currentUser.id}/trip-${tripId}-${Date.now()}.jpg`;
+      const arrayBuf = await compressed.arrayBuffer();
+      const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType:'image/jpeg'});
+      if (error) { showToast('Feil: ' + error.message); return; }
+      await sb.from('trip_photos').insert({ trip_id: tripId, user_id: currentUser.id, photo_path: path });
+    }
+    showToast(`${files.length} bilde${files.length>1?'r':''} lastet opp! 📸`);
     await loadData();
     openTripDetail(tripId);
   } catch(e) {
     showToast('Feil ved opplasting');
+    console.error(e);
+  }
+}
+
+async function deleteTripPhoto(path, tripId) {
+  if (!sb) return;
+  const confirmed = await showConfirmModal('Slett bildet?');
+  if (!confirmed) return;
+  try {
+    await sb.storage.from('catch-photos').remove([path]);
+    await sb.from('trip_photos').delete().eq('photo_path', path);
+    showToast('Bilde slettet');
+    await loadData();
+    openTripDetail(tripId);
+  } catch(e) {
+    showToast('Feil ved sletting');
   }
 }
 
@@ -1223,7 +1260,12 @@ function openTripDetail(tripId){
         const photos = (window.tripPhotoCache||{})[t.id] || [];
         const photoHtml = photos.map(p => {
           const url = getPhotoUrl(p);
-          return `<img src="${url}" onclick="openPhotoZoom('${url}')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer" loading="lazy">`;
+          const canDelete = isParticipant;
+          return `<div style="position:relative;display:inline-block">
+            <img src="${url}" onclick="openPhotoZoom('${url}')" 
+              ${canDelete ? `oncontextmenu="event.preventDefault();deleteTripPhoto('${p}','${t.id}')" ontouchstart="startLongPress('${p}','trip','${t.id}')" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress(event)"` : ''}
+              style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer;display:block" loading="lazy">
+          </div>`;
         }).join('');
         return `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0.75rem">${photoHtml}</div>`;
       })()}
@@ -1231,7 +1273,7 @@ function openTripDetail(tripId){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Last opp bilde
       </label>
-      <input type="file" id="trip-photo-input-${t.id}" accept="image/*" style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
+      <input type="file" id="trip-photo-input-${t.id}" accept="image/*" multiple style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
     </div>
     <div class="section-title">Fangster (${catches.length})</div>
     ${catchHtml}
@@ -2315,11 +2357,17 @@ let longPressTimer = null;
 
 let longPressStartY = 0;
 
-function startLongPress(msgId, event) {
+function startLongPress(id, type, extra, event) {
+  // Handle both chat reactions and trip photo deletion
+  if (typeof type === 'object') { event = type; type = 'chat'; }
   longPressStartY = event?.touches?.[0]?.clientY || 0;
   longPressTimer = setTimeout(() => {
     longPressTimer = null;
-    showReactionPicker(msgId);
+    if (type === 'trip') {
+      deleteTripPhoto(id, extra);
+    } else {
+      showReactionPicker(id);
+    }
   }, 600);
 }
 
@@ -2570,8 +2618,9 @@ async function sendChatPhoto(event) {
     const ext = (file.name||'photo.jpg').split('.').pop().toLowerCase() || 'jpg';
     const safeExt = ['jpg','jpeg','png','webp','heic'].includes(ext) ? ext : 'jpg';
     const path = `${currentUser.id}/chat-${Date.now()}.${safeExt}`;
-    const arrayBuf = await file.arrayBuffer();
-    const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType: file.type||'image/jpeg'});
+    const compressed = await compressImage(file);
+    const arrayBuf = await compressed.arrayBuffer();
+    const { error } = await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType:'image/jpeg'});
     if (error) { showToast('Feil: ' + error.message); return; }
     const { data } = sb.storage.from('catch-photos').getPublicUrl(path);
     const photoUrl = data.publicUrl;
