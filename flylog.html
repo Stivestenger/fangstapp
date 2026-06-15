@@ -949,11 +949,9 @@ async function loadData(){
     if (!window.catchPhotoCache[p.catch_id]) window.catchPhotoCache[p.catch_id] = [];
     window.catchPhotoCache[p.catch_id].push(p.photo_path);
   });
-  allTrips=tr.data||[];allCatches=ca.data||[];
-  allProfiles=[];
+  allTrips=tr.data||[];
+  allCatches=ca.data||[];
   allProfiles=(prof.data||[]);
-  const myIds=new Set(allTrips.map(t=>t.id));
-  (allTr.data||[]).forEach(t=>{ if(!myIds.has(t.id)) allTrips.push(t); });
   allTrips.sort((a,b)=>new Date(b.date)-new Date(a.date));
   renderHome();renderCatches();populateTripSelect();setTimeout(renderTrophy,200);if(document.getElementById("tab-map").style.display!=="none")renderMap();
 }
