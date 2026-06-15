@@ -835,6 +835,41 @@ function enterApp(){
   setTimeout(subscribeChatRealtime, 1000);
 }
 
+function toggleTripPhotoEdit(tripId) {
+  const btn = document.getElementById(`trip-edit-btn-${tripId}`);
+  const deleteBtns = document.querySelectorAll('.trip-photo-delete-btn');
+  const isEditing = btn.textContent === 'Ferdig';
+  btn.textContent = isEditing ? 'Rediger' : 'Ferdig';
+  deleteBtns.forEach(b => {
+    if (b.dataset.trip === tripId) {
+      b.style.display = isEditing ? 'none' : 'flex';
+    }
+  });
+}
+
+function toggleCatchPhotoEdit(catchId) {
+  const btn = document.getElementById(`catch-edit-btn-${catchId}`);
+  const deleteBtns = document.querySelectorAll(`.catch-photo-delete-btn-${catchId}`);
+  const isEditing = btn.textContent === 'Ferdig';
+  btn.textContent = isEditing ? 'Rediger' : 'Ferdig';
+  deleteBtns.forEach(b => {
+    b.style.display = isEditing ? 'none' : 'flex';
+  });
+}
+
+async function deleteCatchPhoto(path, photoId, catchId) {
+  if (!confirm('Slett bildet?')) return;
+  try {
+    if (path) await sb.storage.from('catch-photos').remove([path]);
+    if (photoId) await sb.from('catch_photos').delete().eq('id', photoId);
+    showToast('Bilde slettet');
+    await loadData();
+    openCatchDetailWithPhotos(catchId);
+  } catch(e) {
+    showToast('Feil ved sletting');
+  }
+}
+
 async function compressImage(file, maxPx=1920, quality=0.8) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -1257,20 +1292,22 @@ function openTripDetail(tripId){
         const photos = (window.tripPhotoCache||{})[t.id] || [];
         const photoHtml = photos.map(p => {
           const url = getPhotoUrl(p);
-          const canDelete = isParticipant;
-          return `<div style="position:relative;display:inline-block">
+          return `<div style="position:relative;display:inline-block" class="trip-photo-item-${t.id}">
             <img src="${url}" onclick="openPhotoZoom('${url}')" 
-              ${canDelete ? `oncontextmenu="event.preventDefault();deleteTripPhoto('${p}','${t.id}')" ontouchstart="startLongPress('${p}','trip','${t.id}',event)" ontouchend="cancelLongPress()" ontouchmove="cancelLongPress(event)"` : ''}
               style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer;display:block" loading="lazy">
+            ${isParticipant ? `<div class="trip-photo-delete-btn" data-path="${p}" data-trip="${t.id}" onclick="deleteTripPhoto('${p}','${t.id}')" style="display:none;position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:#e24b4a;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2)">✕</div>` : ''}
           </div>`;
         }).join('');
         return `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0.75rem">${photoHtml}</div>`;
       })()}
-      ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="display:inline-flex;align-items:center;gap:6px;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:10px;padding:6px 14px;cursor:pointer;font-size:0.82rem;color:var(--ink-light)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Last opp bilde
-      </label>
-      <input type="file" id="trip-photo-input-${t.id}" accept="image/*" multiple style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        ${isParticipant && photos.length > 0 ? `<button onclick="toggleTripPhotoEdit('${t.id}')" id="trip-edit-btn-${t.id}" style="font-size:0.78rem;color:var(--river-mid);background:none;border:none;cursor:pointer;font-weight:500">Rediger</button>` : '<span></span>'}
+        ${isParticipant ? `<label for="trip-photo-input-${t.id}" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--river-mid);cursor:pointer;font-weight:500">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Last opp bilde
+        </label>
+        <input type="file" id="trip-photo-input-${t.id}" accept="image/*" multiple style="display:none" onchange="uploadTripPhoto(event,'${t.id}')">` : ''}
+      </div>
     </div>
     <div class="section-title">Fangster (${catches.length})</div>
     ${catchHtml}
@@ -2225,8 +2262,16 @@ async function openCatchDetailWithPhotos(catchId) {
     </div>
 
     ${allPhotoUrls.length > 0 ? `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
-      ${allPhotoUrls.map(u => `<img src="${u}" onclick="openPhotoZoom('${u}')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer" loading="lazy">`).join('')}
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        ${isOwn ? `<button onclick="toggleCatchPhotoEdit('${c.id}')" id="catch-edit-btn-${c.id}" style="font-size:0.78rem;color:var(--river-mid);background:none;border:none;cursor:pointer;font-weight:500">Rediger</button>` : '<span></span>'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${allPhotoUrls.map((u,i) => `<div style="position:relative;display:inline-block" class="catch-photo-item-${c.id}">
+          <img src="${u}" onclick="openPhotoZoom('${u}')" style="width:80px;height:80px;object-fit:cover;border-radius:10px;cursor:pointer" loading="lazy">
+          ${isOwn ? `<div class="catch-photo-delete-btn-${c.id}" onclick="deleteCatchPhoto('${photoIds[i]?.path}','${photoIds[i]?.id}','${c.id}')" style="display:none;position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:#e24b4a;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2)">✕</div>` : ''}
+        </div>`).join('')}
+      </div>
     </div>` : ''}
 
     ${isOwn ? `
