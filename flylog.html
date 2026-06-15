@@ -186,6 +186,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 .modal::-webkit-scrollbar{display:none}
 .leaflet-bottom{bottom:calc(6rem + env(safe-area-inset-bottom)) !important}
 .leaflet-control-attribution{font-size:9px !important;opacity:0.6;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chat-messages::-webkit-scrollbar{display:none}
 </style>
 <script>
 // Run before page renders - hide config if already set
@@ -391,7 +392,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <button onclick="closeModal('modal-chat')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.7);font-size:1.2rem">✕</button>
     </div>
     <!-- Messages - scrollable -->
-    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%)"></div>
+    <div id="chat-messages" style="flex:1;min-height:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;background:linear-gradient(175deg,var(--river) 0%,var(--river-mid) 45%,var(--moss) 100%);scrollbar-width:none;-ms-overflow-style:none"></div>
     <!-- Reaction picker -->
     <div id="reaction-picker" style="display:none;background:var(--river-mid);border-top:1px solid rgba(255,255,255,0.1);padding:0.6rem 1rem;justify-content:space-around;flex-shrink:0;z-index:10">
       <span onclick="pickReaction('👍')" style="font-size:1.6rem;cursor:pointer;padding:0.2rem">👍</span>
