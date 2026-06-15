@@ -906,7 +906,7 @@ function renderCatches(){
     const catchTimeDisplay = c.catch_date ? c.catch_date.split('T')[1]?.slice(0,5) : '';
     const nick = getNickByUserId(c.user_id);
     const catchLabel = getCatchLabel(c);
-    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.85rem 0.6rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;margin-top:0.9rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05);position:relative" onclick="openCatchDetailWithPhotos('${c.id}')">
+    items.push(`<div class="catch-card" id="catch-${c.id}" style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.85rem;background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:12px;margin-bottom:0.4rem;cursor:pointer;box-shadow:0 1px 5px rgba(18,33,30,0.05);position:relative;overflow:hidden" onclick="openCatchDetailWithPhotos('${c.id}')">
       ${catchLabel?`<div style="position:absolute;top:-10px;right:8px;background:${catchLabel.color};color:#fff;font-size:0.6rem;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.05em;white-space:nowrap">${catchLabel.text}</div>`:''}
 
       ${(()=>{
