@@ -1558,10 +1558,10 @@ async function renderTrophy() {
       <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px">
         ${podiumOrder.map((m,i) => m ? `
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
-            ${getAvatarHtml(m.userId, m.name, i===1?52:40)}
+            ${getAvatarHtml(m.userId, m.name, i===1?64:52)}
             <div style="font-weight:600;font-size:${i===1?'0.88rem':'0.78rem'};color:var(--ink);text-align:center;line-height:1.2">${m.name}</div>
             <div style="font-family:'DM Mono',monospace;font-size:${i===1?'0.92rem':'0.8rem'};font-weight:700;color:${m.score>0?'var(--river-mid)':'var(--ink-light)'}">${m.score}p</div>
-            <div style="width:100%;background:${podiumColors[i]};border-radius:6px 6px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;font-size:${i===1?'2.2rem':'1.8rem'}">${podiumLabels[i]}</div>
+            <div style="width:100%;background:${podiumColors[i]};border-radius:6px 6px 0 0;height:${podiumHeights[i]};display:flex;align-items:center;justify-content:center;font-size:${i===1?'2.6rem':'2.1rem'}">${podiumLabels[i]}</div>
           </div>` : `<div style="flex:1"></div>`
         ).join('')}
       </div>
