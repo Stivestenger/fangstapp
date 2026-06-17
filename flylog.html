@@ -2484,12 +2484,33 @@ async function loadChatReactions() {
 
 // ── CATCH LABELS ──────────────────────────────────────
 const CATCH_LABEL_CATEGORIES = {
-  tiny:   { color: '#e24b4a', labels: ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"] },
-  small:  { color: '#BA7517', labels: ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"] },
-  medium: { color: '#3B6D11', labels: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"] },
-  large:  { color: '#534AB7', labels: ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"] },
-  huge:   { color: '#2C2C2A', labels: ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"] }
+  tiny:   { color: '#FF3B30', labels: ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"] },
+  small:  { color: '#FFD600', labels: ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"] },
+  medium: { color: '#00C853', labels: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"] },
+  large:  { color: '#0091FF', labels: ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"] },
+  huge:   { color: '#FF2D78', labels: ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"] }
 };
+
+function makeStickerSVG(text, color) {
+  const style = Math.random() < 0.5 ? 'classic' : 'oval';
+  const rot = (Math.random() * 4 - 2).toFixed(1);
+  const fs = 7;
+  const charW = fs * 0.62;
+  const textW = Math.max(text.length * charW, 30);
+  const pw = textW + 18;
+  const ph = 24;
+  const tailH = 8;
+  const totalH = ph + tailH;
+  const cx = pw / 2;
+  const textColor = color === '#FFD600' ? '#1a1a1a' : '#fff';
+  let shape = '';
+  if (style === 'classic') {
+    shape = '<path d="M6,0 Q0,0 0,6 L0,' + (ph-6) + ' Q0,' + ph + ' 6,' + ph + ' L' + (pw*0.3).toFixed(0) + ',' + ph + ' L' + (pw*0.3-6).toFixed(0) + ',' + totalH + ' L' + (pw*0.3+10).toFixed(0) + ',' + ph + ' L' + (pw-6) + ',' + ph + ' Q' + pw + ',' + ph + ' ' + pw + ',' + (ph-6) + ' L' + pw + ',6 Q' + pw + ',0 ' + (pw-6) + ',0 Z" fill="' + color + '"/>';
+  } else {
+    shape = '<ellipse cx="' + cx + '" cy="' + (ph/2) + '" rx="' + (pw/2) + '" ry="' + (ph/2) + '" fill="' + color + '"/><path d="M' + (pw*0.65).toFixed(0) + ',' + (ph-2) + ' L' + (pw*0.8).toFixed(0) + ',' + totalH + ' L' + (pw*0.5).toFixed(0) + ',' + (ph-1) + ' Z" fill="' + color + '"/>';
+  }
+  return '<div class="catch-sticker" style="transform:rotate(' + rot + 'deg);filter:drop-shadow(2px 3px 4px rgba(0,0,0,0.3))"><svg width="' + pw + '" height="' + totalH + '" viewBox="0 0 ' + pw + ' ' + totalH + '" style="overflow:visible">' + shape + '<text x="' + cx + '" y="' + (ph/2) + '" text-anchor="middle" dominant-baseline="middle" fill="' + textColor + '" font-size="' + fs + '" font-weight="700" font-family="DM Sans,sans-serif" letter-spacing="0.4">' + text + '</text></svg></div>';
+}
 
 function getCatchLabelCategory(weight) {
   const w = parseFloat(weight) || 0;
