@@ -1330,6 +1330,15 @@ function getMemberNameByUserId(userId) {
   return profile?.member_name || profile?.nickname || null;
 }
 
+function resolveMemberNick(memberName) {
+  // Find profile by member_name or nickname, return current nickname
+  const profile = (allProfiles||[]).find(p => 
+    p.member_name === memberName || p.nickname === memberName
+  );
+  return profile?.nickname || memberName;
+}
+
+
 function getMyNickname() {
   return currentUser?.user_metadata?.nickname || currentUser?.email?.split('@')[0] || 'Ukjent';
 }
@@ -1408,7 +1417,7 @@ function renderHome(){
   list.innerHTML = allTrips.map(t => {
     const tc = allCatches.filter(c => c.trip_id === t.id);
     const members = t.members||[];
-    const memberPills = members.map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.68rem;font-weight:500;padding:1px 8px;border-radius:20px">${m}</span>`).join('');
+    const memberPills = members.map(m => `<span style="background:var(--river-pale);color:var(--river);font-size:0.68rem;font-weight:500;padding:1px 8px;border-radius:20px">${resolveMemberNick(m)}</span>`).join('');
     const species = tc.reduce((a,c)=>{a[c.species]=(a[c.species]||0)+1;return a;},{});
     const fishPills = Object.entries(species).map(([s,n])=>`<span style="background:var(--moss-pale);color:var(--moss);font-size:0.72rem;font-weight:500;padding:2px 10px;border-radius:20px">${s} ×${n}</span>`).join('');
     return `<div class="trip-card" onclick="openTripDetail('${t.id}')">
@@ -1521,6 +1530,7 @@ async function renderTrophy() {
     const memberName = getMemberNameByUserId(c.user_id) || nick;
     let entry = board.find(b => b.userId === c.user_id);
     if (!entry) { entry = {name:nick, memberName:memberName, userId:c.user_id, count:0, score:0, heaviest:0}; board.push(entry); }
+    entry.name = nick; // Always use latest nickname
     entry.count++;
     const w = parseFloat(c.weight)||0;
     if (w > entry.heaviest) entry.heaviest = w;
@@ -1535,10 +1545,16 @@ async function renderTrophy() {
   const boardMap = {};
   board.forEach(m => { boardMap[m.memberName] = m; });
   const fullBoard = allMemberNames.map(name => {
-    if (boardMap[name]) return boardMap[name];
-    // Find profile by member_name or nickname
+    if (boardMap[name]) {
+      // Update display name to current nickname
+      const entry = boardMap[name];
+      const profile = (allProfiles||[]).find(p => p.id === entry.userId);
+      if (profile?.nickname) entry.name = profile.nickname;
+      return entry;
+    }
     const profile = (allProfiles||[]).find(p => p.member_name === name || p.nickname === name);
-    return {name, userId: profile?.id || null, count:0, heaviest:0, score:0};
+    const displayName = profile?.nickname || name;
+    return {name: displayName, memberName: name, userId: profile?.id || null, count:0, heaviest:0, score:0};
   });
   fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
 
