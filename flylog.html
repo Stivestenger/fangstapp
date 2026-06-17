@@ -1325,9 +1325,12 @@ function getNickByUserId(userId) {
 
 function getMemberNameByUserId(userId) {
   if (!userId) return null;
-  if (userId === currentUser?.id) return currentUser?.user_metadata?.member_name || null;
+  // Always check allProfiles first (most up to date)
   const profile = (allProfiles||[]).find(p => p.id === userId);
-  return profile?.member_name || profile?.nickname || null;
+  if (profile?.member_name) return profile.member_name;
+  // Fallback to user_metadata for current user
+  if (userId === currentUser?.id) return currentUser?.user_metadata?.member_name || null;
+  return profile?.nickname || null;
 }
 
 function resolveMemberNick(memberName) {
