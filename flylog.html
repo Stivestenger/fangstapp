@@ -1135,7 +1135,7 @@ function openTripDetail(tripId){
     <h2 style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:0.5rem">${t.name}</h2>
 
     ${t.members && t.members.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0.5rem">
-      ${t.members.map(m=>`<span style="background:var(--river-pale);color:var(--river);font-size:0.75rem;font-weight:500;padding:3px 10px;border-radius:20px">${m}</span>`).join('')}
+      ${t.members.map(m=>`<span style="background:var(--river-pale);color:var(--river);font-size:0.75rem;font-weight:500;padding:3px 10px;border-radius:20px">${resolveMemberNick(m)}</span>`).join('')}
     </div>` : ''}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.5rem">
@@ -1553,7 +1553,7 @@ async function renderTrophy() {
       return entry;
     }
     const profile = (allProfiles||[]).find(p => p.member_name === name || p.nickname === name);
-    const displayName = profile?.nickname || name;
+    const displayName = resolveMemberNick(name);
     return {name: displayName, memberName: name, userId: profile?.id || null, count:0, heaviest:0, score:0};
   });
   fullBoard.sort((a,b) => b.score - a.score || b.count - a.count);
