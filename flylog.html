@@ -967,11 +967,12 @@ async function loadData(){
 async function uploadPhoto(userId){
   if(!selectedPhotoFile||!sb)return null;
   try {
-    const ext=(selectedPhotoFile.name||'photo.jpg').split('.').pop().toLowerCase()||'jpg';
-    const safeExt = ['jpg','jpeg','png','gif','webp','heic'].includes(ext) ? ext : 'jpg';
-    const path=`${userId}/${Date.now()}.${safeExt}`;
-    const arrayBuf = await selectedPhotoFile.arrayBuffer();
-    const {error}=await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType:selectedPhotoFile.type||'image/jpeg', upsert:false});
+    // Compress before upload
+    let fileToUpload = selectedPhotoFile;
+    try { fileToUpload = await compressImage(selectedPhotoFile); } catch(e) {}
+    const path=`${userId}/${Date.now()}.jpg`;
+    const arrayBuf = await fileToUpload.arrayBuffer();
+    const {error}=await sb.storage.from('catch-photos').upload(path, arrayBuf, {contentType:'image/jpeg', upsert:false});
     if(error){showToast('Bildeopplasting feilet: '+error.message);console.error('Upload error:',error);return null}
     return path;
   } catch(e) {
@@ -987,11 +988,6 @@ async function saveCatch(){
   if(!species){showToast('Velg en art');return}
   const btn=document.getElementById('catch-save-btn');
   btn.textContent='Lagrer…';btn.disabled=true;
-  // Compress photo before upload
-  const rawFile = selectedPhotoFile;
-  if (rawFile) {
-    try { selectedPhotoFile = await compressImage(rawFile); } catch(e) {}
-  }
   const photoPath=await uploadPhoto(currentUser.id);
   const catchWeight = parseFloat(document.getElementById('catch-weight').value)||null;
   const randomLabel = catchWeight ? generateRandomLabel(catchWeight) : null;
