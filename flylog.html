@@ -1058,7 +1058,9 @@ function openTripDetail(tripId){
   const t=allTrips.find(x=>x.id===tripId);
   if(!t)return;
   const myNick=getMyNickname();
-  const isParticipant=!t.members||t.members.length===0||t.members.includes(myNick)||t.user_id===currentUser.id;
+  const myMemberName = getMemberNameByUserId(currentUser.id) || myNick;
+  const isParticipant=!t.members||t.members.length===0||t.user_id===currentUser.id||
+    (t.members||[]).some(m => m === myNick || m === myMemberName);
   const catches=allCatches.filter(c=>c.trip_id===tripId);
   // Summary stats
   const totalCatches = catches.length;
@@ -1384,7 +1386,9 @@ function populateTripSelect() {
   const sel = document.getElementById('catch-trip');
   if (!sel) return;
   const myNick = getMyNickname();
-  const myTrips = allTrips.filter(t => t.user_id === currentUser.id || (t.members||[]).includes(myNick));
+  const myMemberName = getMemberNameByUserId(currentUser.id) || myNick;
+  const myTrips = allTrips.filter(t => t.user_id === currentUser.id || 
+    (t.members||[]).some(m => m === myNick || m === myMemberName));
   sel.innerHTML = '<option value="">Ingen tur</option>' + myTrips.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 }
 
