@@ -987,26 +987,38 @@ async function saveCatch(){
   if(!species){showToast('Velg en art');return}
   const btn=document.getElementById('catch-save-btn');
   btn.textContent='Lagrer…';btn.disabled=true;
+  // Compress photo before upload
+  const rawFile = selectedPhotoFile;
+  if (rawFile) {
+    try { selectedPhotoFile = await compressImage(rawFile); } catch(e) {}
+  }
   const photoPath=await uploadPhoto(currentUser.id);
-  const {error}=await sb.from('catches').insert({
+  const catchWeight = parseFloat(document.getElementById('catch-weight').value)||null;
+  const randomLabel = catchWeight ? generateRandomLabel(catchWeight) : null;
+  const catchDateVal = document.getElementById('catch-date').value;
+  const catchTimeVal = document.getElementById('catch-time').value;
+  const catchDatetime = catchDateVal ? (catchDateVal + (catchTimeVal ? 'T'+catchTimeVal : 'T12:00')) : null;
+  const {data:newCatch, error}=await sb.from('catches').insert({
     user_id:currentUser.id,species,
-    weight:parseFloat(document.getElementById('catch-weight').value)||null,
+    weight:catchWeight,
     fly:document.getElementById('catch-fly').value.trim(),
     fly_size:document.getElementById('catch-fly-size').value||null,
     trip_id:document.getElementById('catch-trip').value||null,
+    catch_date:catchDatetime,
     photo_path:photoPath||null,
+    label:randomLabel,
     weather_temp:weatherData?.temp??null,
     weather_humidity:weatherData?.humidity??null,
     weather_wind:weatherData?.wind??null,
     weather_desc:weatherData?.desc??null,
     weather_lat:catchLat??null,
     weather_lon:catchLon??null
-  });
+  }).select().single();
   btn.textContent='Lagre fangst';btn.disabled=false;
   if(error){showToast('Feil: '+error.message);return}
   closeModal('modal-catch');resetCatchForm();
   showToast('Fangst logget! 🎣');
-  sendPushToClub({species: document.getElementById('catch-species').value});
+  sendPushToClub({species});
   loadData();
 }
 
