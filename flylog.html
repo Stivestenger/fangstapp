@@ -1911,7 +1911,9 @@ async function useGPSLocation() {
   }, () => { showToast('Posisjon nektet — velg på kart'); btn.textContent='Bruk min posisjon'; });
 }
 
-async function fetchWeatherForLocation(lat, lon) {
+async 
+function wmoDesc(code){const map={0:"Klarvær",1:"Mest klart",2:"Delvis skyet",3:"Overskyet",45:"Tåke",51:"Lett yr",61:"Lett regn",63:"Regn",65:"Kraftig regn",71:"Snø",80:"Regnbyger",95:"Tordenvær"};return map[code]||"Ukjent";}
+function fetchWeatherForLocation(lat, lon) {
   try {
     const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&wind_speed_unit=kmh`);
     const d = await r.json();
@@ -2570,6 +2572,14 @@ function getCatchLabelCategory(weight) {
   if (w < 1000) return CATCH_LABEL_CATEGORIES.large;
   return CATCH_LABEL_CATEGORIES.huge;
 }
+const CATCH_LABELS = {
+  tiny:   ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"],
+  small:  ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"],
+  medium: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"],
+  large:  ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"],
+  huge:   ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"]
+};
+
 
 function generateRandomLabel(weight) {
   const w = parseFloat(weight) || 0;
