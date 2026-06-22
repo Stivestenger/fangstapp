@@ -508,7 +508,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button type="button" class="weather-fetch-btn" style="flex:1" onclick="document.getElementById('edit-photo-library').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Last opp bildeiotek
+          Last opp bilde
         </button>
       </div>
       <input type="file" id="edit-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onEditPhotoSelected(event)">
@@ -588,7 +588,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <label for="catch-photo-library" class="weather-fetch-btn" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Last opp bildeliotek
+          Last opp bilde
         </button>
       </div>
       <input type="file" id="catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
@@ -1999,6 +1999,17 @@ function openEditCatch(catchId) {
   editTripSel.innerHTML = '<option value="">— ingen tur —</option>' + 
     allTrips.map(t=>`<option value="${t.id}"${c.trip_id===t.id?' selected':''}>${t.name}</option>`).join('');
   openModal('modal-edit-catch');
+}
+
+function onPhotoSelected(e) {
+  const file = e.target.files[0]; if (!file) return;
+  selectedPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('photo-preview-img').src = ev.target.result;
+    document.getElementById('photo-preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
 }
 
 function onEditPhotoSelected(e) {
