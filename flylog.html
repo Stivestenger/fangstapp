@@ -2592,6 +2592,8 @@ function generateRandomLabel(weight) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+const STICKER_COLORS = ['#FF3B30','#FFD600','#00C853','#0091FF','#FF2D78','#FF6B00','#9B59B6','#00BCD4','#FF1744','#76FF03'];
+
 function getCatchLabel(catch_obj) {
   // Use stored label if available
   if (catch_obj.label) {
