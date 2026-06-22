@@ -1911,7 +1911,6 @@ async function useGPSLocation() {
   }, () => { showToast('Posisjon nektet — velg på kart'); btn.textContent='Bruk min posisjon'; });
 }
 
-async 
 function wmoDesc(code){const map={0:"Klarvær",1:"Mest klart",2:"Delvis skyet",3:"Overskyet",45:"Tåke",51:"Lett yr",61:"Lett regn",63:"Regn",65:"Kraftig regn",71:"Snø",80:"Regnbyger",95:"Tordenvær"};return map[code]||"Ukjent";}
 async function fetchWeatherForLocation(lat, lon) {
   try {
