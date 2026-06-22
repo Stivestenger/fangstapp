@@ -2572,11 +2572,12 @@ function getCatchLabelCategory(weight) {
   return CATCH_LABEL_CATEGORIES.huge;
 }
 const CATCH_LABELS = {
-  tiny:   ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!"],
-  small:  ["PINNE!", "TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "UNDER MIDDELS!", "SÅNN PASSE!", "DUGELIG"],
-  medium: ["HEL VED!", "SOLID!", "PANNEKLAR!", "BRA!", "KURANT!", "GODKJENT!"],
-  large:  ["KUBBE!", "NY PERS?", "SUVERENT!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!"],
-  huge:   ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!"]
+  tiny:   ["HAHA!", "SUCKER!", "SLUK NESTE!", "BARE TRIST!", "PRØV IGJEN!", "UNDER PARI!", "KAST DEN UT!", "STIV STANG", "PATETISK!", "TÅPELIG!", "LATTERLIG!", "PINNE!", "LAVT NIVÅ!", "SVAKT!", "ELENDIG!", "SELG STANGA!"],
+  small:  ["TJA...", "GREIT NOK!", "BRUKBART!", "JAVEL", "MODERAT", "MIDDELS!", "SÅNN PASSE!", "DUGELIG", "PANNEKLAR!", "ADEKVAT", "KURANT", "SALT CHIPS", "DU KAN BEDRE!"],
+  medium: ["HEL VED!", "SOLID!", "BRA JOBBA!", "IKKE FEIL", "GODKJENT!", "FLOTT!", "2 x KLAPP", "NAMNENAM!", "BEDRER SEG!", "BRA!", "KULT!"],
+  large:  ["NY PERS?", "OVERRASKENDE!", "STOLT!", "UTMERKET!", "DEILIG!", "OVER NORM!", "TIDENES!", "JØSS!", "FORTREFFELIG!", "NÅ SNAKKER VI!", "FULL KLAFF!"],
+  xlarge: ["KUBBE!", "SUVERENT!", "WOW!", "NYDELIG!", "DU STORE MIN!", "SUSHI!", "TULL MED VEKTA?", "SPICY!", "HELT KONGE!", "4 x KLAPP!", "SHERIFF!"],
+  huge:   ["GRIS!", "KRIMINELT!", "MONSTER!", "HVAL!", "JUKS?", "DOPING?", "HALL OF FAME!", "DRØYT!", "FANTASTISK!", "EKSTASE!", "GOAT!", "VULGÆRT!", "EKSPLOSIVT!", "ELEFANT!"]
 };
 
 
@@ -2584,10 +2585,11 @@ function generateRandomLabel(weight) {
   const w = parseFloat(weight) || 0;
   if (w <= 0) return null;
   let pool;
-  if (w < 150) pool = CATCH_LABELS.tiny;
-  else if (w < 300) pool = CATCH_LABELS.small;
-  else if (w < 750) pool = CATCH_LABELS.medium;
-  else if (w < 1000) pool = CATCH_LABELS.large;
+  if (w < 200) pool = CATCH_LABELS.tiny;
+  else if (w < 400) pool = CATCH_LABELS.small;
+  else if (w < 600) pool = CATCH_LABELS.medium;
+  else if (w < 800) pool = CATCH_LABELS.large;
+  else if (w < 1000) pool = CATCH_LABELS.xlarge;
   else pool = CATCH_LABELS.huge;
   return pool[Math.floor(Math.random() * pool.length)];
 }
