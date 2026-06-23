@@ -194,6 +194,58 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
   right: 8px;
   pointer-events: none;
 }
+
+[data-theme="dark"] {
+  --paper: #111111;
+  --white: #1c1c1c;
+  --ink: #e8e4dc;
+  --ink-light: #888888;
+  --river: #0d2030;
+  --river-mid: #2c5f7a;
+  --river-pale: rgba(44,95,122,0.25);
+  --moss: #0f1f0d;
+  --moss-pale: rgba(45,74,30,0.25);
+  --moss-mid: #4a7a35;
+  --sand: rgba(212,168,67,0.3);
+  --sand-pale: #2a2208;
+}
+[data-theme="dark"] .topbar {
+  background: #1a1a1a;
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .bottom-nav {
+  background: #1a1a1a;
+  border-top: 0.5px solid rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .trip-card {
+  background: #1c1c1c;
+  border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .catch-card {
+  background: #1c1c1c;
+  border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .modal {
+  background: #1c1c1c;
+}
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0,0,0,0.75);
+}
+[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea {
+  background: #2a2a2a;
+  color: #e8e4dc;
+  border-color: rgba(255,255,255,0.15);
+}
+[data-theme="dark"] .btn-primary {
+  background: #2c5f7a;
+}
+[data-theme="dark"] .screen-auth-bg {
+  background: linear-gradient(160deg,#0d1f2d 0%,#0f2218 100%);
+}
+
+#dark-mode-toggle:checked + span { background: var(--river-mid); }
+#dark-mode-toggle:checked + span:before { transform: translateX(20px); }
+#dark-mode-slider:before { content:""; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
 </style>
 <script>
 // Run before page renders - hide config if already set
@@ -488,6 +540,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
     <div class="modal-handle"></div>
     <div class="modal-title">Endre kallenavn</div>
     <div class="field-group">
+      <label class="field-label" style="text-transform:uppercase;letter-spacing:0.06em;font-size:0.78rem">Utseende</label>
+      <div style="background:var(--white);border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;box-shadow:0 2px 12px rgba(18,33,30,0.07)">
+        <div>
+          <div style="font-size:0.88rem;font-weight:500;color:var(--ink)">Mørk modus</div>
+          <div style="font-size:0.72rem;color:var(--ink-light);margin-top:2px">Skift mellom lyst og mørkt tema</div>
+        </div>
+        <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;cursor:pointer">
+          <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
+          <span id="dark-mode-slider" style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:background 0.3s"></span>
+          <span id="dark-mode-knob" style="position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform 0.3s;pointer-events:none"></span>
+        </label>
+      </div>
       <label class="field-label">Kallenavn</label>
       <input type="text" id="nickname-input" placeholder="f.eks. Stiv, Laksen, Mormyra...">
     </div>
@@ -1353,6 +1417,32 @@ function resolveMemberNick(memberName) {
     p.member_name === memberName || p.nickname === memberName
   );
   return profile?.nickname || memberName;
+}
+
+
+function toggleDarkMode(val) {
+  if (val) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('darkMode', 'true');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('darkMode', 'false');
+  }
+  const slider = document.getElementById('dark-mode-slider');
+  const knob = document.getElementById('dark-mode-knob');
+  if (slider) slider.style.background = val ? '#2c5f7a' : '#ccc';
+  if (knob) knob.style.transform = val ? 'translateX(20px)' : 'translateX(0)';
+}
+
+function initDarkMode() {
+  const saved = localStorage.getItem('darkMode') === 'true';
+  if (saved) document.documentElement.setAttribute('data-theme', 'dark');
+  const toggle = document.getElementById('dark-mode-toggle');
+  const slider = document.getElementById('dark-mode-slider');
+  const knob = document.getElementById('dark-mode-knob');
+  if (toggle) toggle.checked = saved;
+  if (slider) slider.style.background = saved ? '#2c5f7a' : '#ccc';
+  if (knob) knob.style.transform = saved ? 'translateX(20px)' : 'translateX(0)';
 }
 
 
