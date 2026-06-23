@@ -1107,9 +1107,7 @@ function openTripDetail(tripId){
     const thumbHtml = thumbUrl
       ? `<img src="${thumbUrl}" onclick="openPhotoZoom('${thumbUrl}')" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer" loading="lazy">`
       : `<div style="width:44px;height:44px;border-radius:8px;background:var(--river-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem">🎣</div>`;
-    const extraThumbHtml = allPhotos.length > 1
-      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">${allPhotos.slice(1).map(p=>{const u=getPhotoUrl(p);return `<img src="${u}" onclick="openPhotoZoom('${u}')" style="width:36px;height:36px;object-fit:cover;border-radius:6px;cursor:pointer" loading="lazy">`;}).join('')}</div>`
-      : '';
+    const extraThumbHtml = '';
     return`<div style="padding:0.65rem 0;border-bottom:1px solid rgba(0,0,0,0.05)">
       <div style="display:flex;align-items:center;gap:0.75rem">
         ${thumbHtml}
