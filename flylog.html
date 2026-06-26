@@ -605,7 +605,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 </div>
 
 <!-- MODAL: NEW CATCH -->
-<div class="modal-overlay" id="modal-catch">
+<div class="modal-overlay" id="modal-catch" style="z-index:10001">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" style="position:relative">Logg en fangst
@@ -1054,8 +1054,8 @@ function resetCatchForm(){
   ['weather-result','location-set','catch-pin-map'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   const gpsLbl=document.getElementById('gps-btn-label');if(gpsLbl)gpsLbl.textContent='Bruk min posisjon';
   catchLat=null;catchLon=null;
-  if(catchPinMarker){catchPinMarker.remove();catchPinMarker=null;}
-  if(catchPinMap){catchPinMap.remove();catchPinMap=null;}
+  try{if(catchPinMarker){catchPinMarker.remove();catchPinMarker=null;}}catch(e){catchPinMarker=null;}
+  try{if(catchPinMap){catchPinMap.remove();catchPinMap=null;}}catch(e){catchPinMap=null;}
 }
 
 async function saveTrip(){
