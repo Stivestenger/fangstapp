@@ -209,6 +209,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
 
 
+
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+}
 </style>
 <script>
 // Run before page renders - hide config if already set
@@ -594,7 +606,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 </div>
 
 <!-- MODAL: NEW CATCH -->
-<div class="modal-overlay" id="modal-catch">
+<div class="modal-overlay" id="modal-catch" autocomplete="off">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Logg en fangst</div>
@@ -608,6 +620,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       </div>
       <input type="file" id="catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
       <input type="file" id="catch-photo-library" accept="image/*" style="display:none" onchange="onPhotoSelected(event)">
+      </div>
       <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none">
         <img id="photo-preview-img" src="" alt="catch photo">
         <button class="photo-remove" onclick="removePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -625,11 +638,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
       <div class="field-group"><label class="field-label">Vekt (g)</label><input type="number" id="catch-weight" placeholder="0" min="0" step="1"></div>
     </div>
     <div class="field-row">
+      <div class="field-group"><label class="field-label">Lengde (cm)</label><input type="number" id="catch-length" placeholder="0" min="0" step="0.5"></div>
+    </div>
+    <div class="field-row">
       <div class="field-group"><label class="field-label">Dato</label><input type="date" id="catch-date"></div>
       <div class="field-group"><label class="field-label">Klokkeslett</label><input type="time" id="catch-time"></div>
     </div>
     <div class="field-row">
-      <div class="field-group"><label class="field-label">Flue</label><input type="text" id="catch-fly" placeholder="f.eks. Elk Hair Caddis"></div>
+      <div class="field-group"><label class="field-label">Flue</label><input type="text" id="catch-fly" placeholder="f.eks. Elk Hair Caddis" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
       <div class="field-group"><label class="field-label">Størrelse</label>
         <select id="catch-fly-size">
           <option value="">— str —</option>
@@ -1036,22 +1052,15 @@ async function saveCatch(){
 
 function resetCatchForm(){
   selectedPhotoFile=null;weatherData=null;
-  document.getElementById('catch-photo-camera').value='';
-  document.getElementById('catch-photo-library').value='';
-  document.getElementById('photo-preview-wrap').style.display='none';
-  document.getElementById('catch-species').value='';
-  document.getElementById('catch-weight').value='';
-  document.getElementById('catch-length').value='';
-  document.getElementById('catch-fly').value='';
-  document.getElementById('catch-fly-size').value='';
-  document.getElementById('weather-result').style.display='none';
-  document.getElementById('location-set').style.display='none';
-  document.getElementById('gps-btn-label').textContent='Bruk min posisjon';
-  if(document.getElementById('catch-pin-map')) document.getElementById('catch-pin-map').style.display='none';
-  const now2 = new Date();
-  if(document.getElementById('catch-date')) document.getElementById('catch-date').value = now2.toISOString().split('T')[0];
-  if(document.getElementById('catch-time')) document.getElementById('catch-time').value = now2.toTimeString().slice(0,5);
-  catchLat=null; catchLon=null;
+  ['catch-photo-camera','catch-photo-library'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const wrap=document.getElementById('photo-preview-wrap');if(wrap)wrap.style.display='none';
+  ['catch-species','catch-weight','catch-length','catch-fly','catch-fly-size','catch-trip'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  ['catch-date','catch-time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['weather-result','location-set','catch-pin-map'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const gpsLbl=document.getElementById('gps-btn-label');if(gpsLbl)gpsLbl.textContent='Bruk min posisjon';
+  catchLat=null;catchLon=null;
   if(catchPinMarker){catchPinMarker.remove();catchPinMarker=null;}
   if(catchPinMap){catchPinMap.remove();catchPinMap=null;}
 }
