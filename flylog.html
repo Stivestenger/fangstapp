@@ -605,7 +605,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 </div>
 
 <!-- MODAL: NEW CATCH -->
-<div class="modal-overlay" id="modal-catch" autocomplete="off">
+<div class="modal-overlay" id="modal-catch">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" style="position:relative">Logg en fangst
@@ -1961,6 +1961,7 @@ function openTripModal() {
 }
 
 function openCatchModal() {
+  resetCatchForm();
   const now = new Date();
   const dateEl = document.getElementById('catch-date');
   const timeEl = document.getElementById('catch-time');
