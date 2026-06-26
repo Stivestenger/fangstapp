@@ -123,10 +123,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);m
 
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(18,33,30,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:2rem 1.25rem;opacity:0;pointer-events:none;transition:opacity 0.25s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--white);border-radius:20px;width:100%;max-width:400px;padding:1.5rem 1.4rem 2rem;max-height:calc(100vh - 8rem);overflow-y:auto;transform:translateY(30px) scale(0.97);opacity:0;transition:transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94),opacity 0.3s ease;box-shadow:0 20px 60px rgba(18,33,30,0.25);scrollbar-width:none}
-.modal-overlay.open .modal{transform:translateY(0) scale(1);opacity:1}
+.modal-overlay{position:fixed;inset:0;background:rgba(18,33,30,0.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:2rem 1.25rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:20px;width:100%;max-width:400px;padding:1.5rem 1.4rem 2rem;max-height:calc(100vh - 8rem);overflow-y:auto;box-shadow:0 20px 60px rgba(18,33,30,0.25);scrollbar-width:none}
+
 .modal-handle{width:40px;height:4px;background:rgba(0,0,0,0.1);border-radius:2px;margin:0 auto 1.2rem}
 .modal-title{font-family:'Lora',serif;font-size:1.3rem;font-weight:600;color:var(--ink);margin-bottom:1.4rem}
 .field-group{margin-bottom:1.1rem}
