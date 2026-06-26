@@ -1012,6 +1012,7 @@ async function saveCatch(){
   const {data:newCatch, error}=await sb.from('catches').insert({
     user_id:currentUser.id,species,
     weight:catchWeight,
+    length:parseFloat(document.getElementById('catch-length').value)||null,
     fly:document.getElementById('catch-fly').value.trim(),
     fly_size:document.getElementById('catch-fly-size').value||null,
     trip_id:document.getElementById('catch-trip').value||null,
@@ -1040,6 +1041,7 @@ function resetCatchForm(){
   document.getElementById('photo-preview-wrap').style.display='none';
   document.getElementById('catch-species').value='';
   document.getElementById('catch-weight').value='';
+  document.getElementById('catch-length').value='';
   document.getElementById('catch-fly').value='';
   document.getElementById('catch-fly-size').value='';
   document.getElementById('weather-result').style.display='none';
@@ -2314,6 +2316,8 @@ async function openCatchDetailWithPhotos(catchId) {
 
   const details = [];
   if (catchDateDisplay) details.push({icon:'📅', label:'Dato', val: catchDateDisplay + (catchTimeDisplay?' · '+catchTimeDisplay:'')});
+  if (c.length) details.push({icon:'📏', label:'Lengde', val: c.length + ' cm'});
+  if (c.weight && c.length) details.push({icon:'📊', label:'K-faktor', val: ((parseFloat(c.weight)/Math.pow(parseFloat(c.length),3))*100).toFixed(2)});
   if (c.fly) details.push({icon:'🪰', label:'Flue', val: c.fly + (c.fly_size?' '+c.fly_size:'')});
   if (c.weather_temp != null) details.push({icon:'🌤', label:'Vær', val: (c.weather_desc||'') + ' · ' + Math.round(c.weather_temp)+'°C · 💨 '+Math.round(c.weather_wind)+' km/h'});
   if (trip) details.push({icon:'🗺️', label:'Tur', val: trip.name});
