@@ -604,162 +604,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   </div>
 </div>
 
-<!-- MODAL: NEW CATCH -->
-<div class="modal-overlay" id="modal-catch" style="z-index:10001">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" style="position:relative">Logg en fangst
-      <label for="catch-photo-library" style="position:absolute;top:-4px;right:0;cursor:pointer;width:34px;height:34px;border-radius:50%;background:var(--paper);border:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </label>
-    </div>
-    <input type="file" id="catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
-    <input type="file" id="catch-photo-library" accept="image/*" style="display:none" onchange="onPhotoSelected(event)">
-      <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none">
-        <img id="photo-preview-img" src="" alt="catch photo">
-        <button class="photo-remove" onclick="removePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">Art</label>
-        <select id="catch-species">
-          <option value="">Velg art</option>
-          <option>Ørret</option><option>Regnbueørret</option><option>Bekkeørret</option>
-          <option>Røye</option><option>Atlantisk laks</option><option>Harr</option>
-          <option>Gjedde</option><option>Abbor</option><option>Annet</option>
-        </select>
-      </div>
-      <div class="field-group"><label class="field-label">Vekt (g)</label><input type="number" id="catch-weight" placeholder="0" min="0" step="1"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">Lengde (cm)</label><input type="number" id="catch-length" placeholder="0" min="0" step="0.5"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">Dato</label><input type="date" id="catch-date"></div>
-      <div class="field-group"><label class="field-label">Klokkeslett</label><input type="time" id="catch-time"></div>
-    </div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">Flue</label><input type="text" id="catch-fly" placeholder="f.eks. Elk Hair Caddis" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
-      <div class="field-group"><label class="field-label">Størrelse</label>
-        <select id="catch-fly-size">
-          <option value="">— str —</option>
-          <option>#4</option><option>#6</option><option>#8</option><option>#10</option>
-          <option>#12</option><option>#14</option><option>#16</option><option>#18</option><option>#20</option>
-        </select>
-      </div>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Fangststed</label>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button class="weather-fetch-btn" style="flex:1" onclick="useGPSLocation()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span id="gps-btn-label">Bruk min posisjon</span>
-        </button>
-        <button class="weather-fetch-btn" style="flex:1" onclick="togglePinMap()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-          <span>Velg på kart</span>
-        </button>
-      </div>
-      <div id="catch-pin-map" style="display:none;height:220px;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,0.1);margin-bottom:8px"></div>
-      <div class="weather-result" id="weather-result" style="display:none">
-        <div class="w-main" id="w-main">—</div>
-        <div class="weather-grid" id="w-grid"></div>
-      </div>
-      <div id="location-set" style="display:none;font-size:0.78rem;color:var(--moss-mid);padding:6px 8px;background:var(--moss-pale);border-radius:8px">
-        📍 <span id="location-set-text">Posisjon satt</span>
-      </div>
-    </div>
-    <div class="field-group"><label class="field-label">Tur</label>
-      <select id="catch-trip"><option value="">— koble til tur —</option></select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-catch')">Avbryt</button>
-      <button class="btn-save" id="catch-save-btn" onclick="saveCatch()">Lagre fangst</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: PHOTO ZOOM -->
-<div class="modal-overlay" id="modal-photo-zoom" style="z-index:99999;align-items:center;justify-content:center;padding:1rem" onclick="closeModal('modal-photo-zoom')">
-  <img id="photo-zoom-img" src="" style="max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain">
-</div>
-
-<!-- MODAL: PASSWORD RECOVERY -->
-<div class="modal-overlay" id="modal-recovery" style="z-index:10000">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Nytt passord</div>
-    <div class="field-group">
-      <label class="field-label">Nytt passord</label>
-      <input type="password" id="recovery-password" placeholder="Minimum 6 tegn">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Bekreft passord</label>
-      <input type="password" id="recovery-password-confirm" placeholder="Gjenta passord">
-    </div>
-    <div id="recovery-error" style="color:var(--danger);font-size:0.82rem;margin-bottom:0.5rem;display:none"></div>
-    <div class="modal-actions">
-      <button class="btn-save" onclick="saveNewPassword()">Lagre passord</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: EDIT TRIP -->
-<div class="modal-overlay" id="modal-edit-trip">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Rediger tur</div>
-    <div class="field-group"><label class="field-label">Turnavn</label><input type="text" id="edit-trip-name" placeholder="f.eks. Glomma åpningsdag"></div>
-    <div class="field-group"><label class="field-label">Lokasjon</label><input type="text" id="edit-trip-location" placeholder="Elv eller innsjø"></div>
-    <div class="field-row">
-      <div class="field-group"><label class="field-label">Fra</label><input type="date" id="edit-trip-date"></div>
-      <div class="field-group"><label class="field-label">Til</label><input type="date" id="edit-trip-date-end"></div>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Deltakere</label>
-      <div id="edit-trip-members-list" style="display:flex;flex-direction:column;gap:8px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Pål" style="width:18px;height:18px;accent-color:var(--river-mid)"> Pål</label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Fredrik" style="width:18px;height:18px;accent-color:var(--river-mid)"> Fredrik</label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Christoffer" style="width:18px;height:18px;accent-color:var(--river-mid)"> Christoffer</label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars-Petter" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars-Petter</label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars</label>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-edit-trip')">Avbryt</button>
-      <button class="btn-save" onclick="saveEditTrip()">Lagre</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: CATCH DETAIL -->
-<div class="modal-overlay" id="modal-catch-detail">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div id="catch-detail-content"></div>
-  </div>
-</div>
-
-<!-- MODAL: CONFIRM -->
-<div class="modal-overlay" id="modal-confirm" style="z-index:10000">
-  <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
-    <div class="modal-handle"></div>
-    <p id="confirm-message" style="font-size:1rem;font-weight:500;color:var(--ink);text-align:center;margin:0.5rem 0 1.5rem">Er du sikker?</p>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="confirmResolve(false)">Avbryt</button>
-      <button style="flex:2;padding:0.85rem;background:var(--danger);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;color:#fff;cursor:pointer" onclick="confirmResolve(true)" id="confirm-ok-btn">OK</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: TRIP DETAIL -->
-<div class="modal-overlay" id="modal-trip-detail">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div id="trip-detail-content"></div>
-  </div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 let sb=null,currentUser=null,authMode='signin',catchOutcome='gjenutsatt';
 let allTrips=[],allCatches=[],selectedPhotoFile=null,weatherData=null;
@@ -2876,6 +2720,164 @@ document.addEventListener('DOMContentLoaded', function() {
   initSupabase();
 });
 </script>
+
+<!-- MODAL: NEW CATCH -->
+<div class="modal-overlay" id="modal-catch" style="z-index:10001">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="position:relative">Logg en fangst
+      <label for="catch-photo-library" style="position:absolute;top:-4px;right:0;cursor:pointer;width:34px;height:34px;border-radius:50%;background:var(--paper);border:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </label>
+    </div>
+    <input type="file" id="catch-photo-camera" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
+    <input type="file" id="catch-photo-library" accept="image/*" style="display:none" onchange="onPhotoSelected(event)">
+      <div class="photo-preview-wrap" id="photo-preview-wrap" style="display:none">
+        <img id="photo-preview-img" src="" alt="catch photo">
+        <button class="photo-remove" onclick="removePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Art</label>
+        <select id="catch-species">
+          <option value="">Velg art</option>
+          <option>Ørret</option><option>Regnbueørret</option><option>Bekkeørret</option>
+          <option>Røye</option><option>Atlantisk laks</option><option>Harr</option>
+          <option>Gjedde</option><option>Abbor</option><option>Annet</option>
+        </select>
+      </div>
+      <div class="field-group"><label class="field-label">Vekt (g)</label><input type="number" id="catch-weight" placeholder="0" min="0" step="1"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Lengde (cm)</label><input type="number" id="catch-length" placeholder="0" min="0" step="0.5"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Dato</label><input type="date" id="catch-date"></div>
+      <div class="field-group"><label class="field-label">Klokkeslett</label><input type="time" id="catch-time"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Flue</label><input type="text" id="catch-fly" placeholder="f.eks. Elk Hair Caddis" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="field-group"><label class="field-label">Størrelse</label>
+        <select id="catch-fly-size">
+          <option value="">— str —</option>
+          <option>#4</option><option>#6</option><option>#8</option><option>#10</option>
+          <option>#12</option><option>#14</option><option>#16</option><option>#18</option><option>#20</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Fangststed</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="weather-fetch-btn" style="flex:1" onclick="useGPSLocation()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="gps-btn-label">Bruk min posisjon</span>
+        </button>
+        <button class="weather-fetch-btn" style="flex:1" onclick="togglePinMap()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span>Velg på kart</span>
+        </button>
+      </div>
+      <div id="catch-pin-map" style="display:none;height:220px;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,0.1);margin-bottom:8px"></div>
+      <div class="weather-result" id="weather-result" style="display:none">
+        <div class="w-main" id="w-main">—</div>
+        <div class="weather-grid" id="w-grid"></div>
+      </div>
+      <div id="location-set" style="display:none;font-size:0.78rem;color:var(--moss-mid);padding:6px 8px;background:var(--moss-pale);border-radius:8px">
+        📍 <span id="location-set-text">Posisjon satt</span>
+      </div>
+    </div>
+    <div class="field-group"><label class="field-label">Tur</label>
+      <select id="catch-trip"><option value="">— koble til tur —</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-catch')">Avbryt</button>
+      <button class="btn-save" id="catch-save-btn" onclick="saveCatch()">Lagre fangst</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PHOTO ZOOM -->
+<div class="modal-overlay" id="modal-photo-zoom" style="z-index:99999;align-items:center;justify-content:center;padding:1rem" onclick="closeModal('modal-photo-zoom')">
+  <img id="photo-zoom-img" src="" style="max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain">
+</div>
+
+<!-- MODAL: PASSWORD RECOVERY -->
+<div class="modal-overlay" id="modal-recovery" style="z-index:10000">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nytt passord</div>
+    <div class="field-group">
+      <label class="field-label">Nytt passord</label>
+      <input type="password" id="recovery-password" placeholder="Minimum 6 tegn">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Bekreft passord</label>
+      <input type="password" id="recovery-password-confirm" placeholder="Gjenta passord">
+    </div>
+    <div id="recovery-error" style="color:var(--danger);font-size:0.82rem;margin-bottom:0.5rem;display:none"></div>
+    <div class="modal-actions">
+      <button class="btn-save" onclick="saveNewPassword()">Lagre passord</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT TRIP -->
+<div class="modal-overlay" id="modal-edit-trip">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Rediger tur</div>
+    <div class="field-group"><label class="field-label">Turnavn</label><input type="text" id="edit-trip-name" placeholder="f.eks. Glomma åpningsdag"></div>
+    <div class="field-group"><label class="field-label">Lokasjon</label><input type="text" id="edit-trip-location" placeholder="Elv eller innsjø"></div>
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">Fra</label><input type="date" id="edit-trip-date"></div>
+      <div class="field-group"><label class="field-label">Til</label><input type="date" id="edit-trip-date-end"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Deltakere</label>
+      <div id="edit-trip-members-list" style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Pål" style="width:18px;height:18px;accent-color:var(--river-mid)"> Pål</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Fredrik" style="width:18px;height:18px;accent-color:var(--river-mid)"> Fredrik</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Christoffer" style="width:18px;height:18px;accent-color:var(--river-mid)"> Christoffer</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars-Petter" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars-Petter</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--ink)"><input type="checkbox" class="edit-trip-member-cb" value="Lars" style="width:18px;height:18px;accent-color:var(--river-mid)"> Lars</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-edit-trip')">Avbryt</button>
+      <button class="btn-save" onclick="saveEditTrip()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CATCH DETAIL -->
+<div class="modal-overlay" id="modal-catch-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="catch-detail-content"></div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM -->
+<div class="modal-overlay" id="modal-confirm" style="z-index:10000">
+  <div class="modal" style="padding:1.5rem 1.4rem 1.8rem">
+    <div class="modal-handle"></div>
+    <p id="confirm-message" style="font-size:1rem;font-weight:500;color:var(--ink);text-align:center;margin:0.5rem 0 1.5rem">Er du sikker?</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="confirmResolve(false)">Avbryt</button>
+      <button style="flex:2;padding:0.85rem;background:var(--danger);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;color:#fff;cursor:pointer" onclick="confirmResolve(true)" id="confirm-ok-btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TRIP DETAIL -->
+<div class="modal-overlay" id="modal-trip-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="trip-detail-content"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 </body>
 </html>
 </html>
